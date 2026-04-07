@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LexFlow">
+<meta name="theme-color" content="#0a0a12">
+<title>LexFlow — English Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a12;
+  --bg2: #111120;
+  --bg3: #191930;
+  --card: #1a1a2e;
+  --border: rgba(120,120,200,0.12);
+  --border2: rgba(120,120,200,0.22);
+  --accent: #5b5ef4;
+  --accent2: #7b7ef8;
+  --accent3: #3d3fb8;
+  --gold: #f4a942;
+  --gold2: #fcc472;
+  --red: #e05252;
+  --green: #4ecb8d;
+  --text: #e8e8f2;
+  --text2: #9090b8;
+  --text3: #5a5a80;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 0 0 1px var(--border), 0 8px 32px rgba(0,0,10,0.5);
+  --glow: 0 0 40px rgba(91,94,244,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
+
+/* ─── SCREEN SYSTEM ─── */
+.screen { display: none; flex-direction: column; height: 100dvh; overflow: hidden; animation: fadeUp .3s ease; }
+.screen.active { display: flex; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+/* ─── NAV BAR ─── */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; background: var(--bg);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.nav-title { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; color: var(--text); }
+.nav-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--bg3); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s; color: var(--text2); font-size: 18px; }
+.nav-icon:hover { background: var(--bg2); }
+
+/* ─── BOTTOM TABS ─── */
+.tabs {
+  display: flex; background: var(--bg); border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom)); flex-shrink: 0;
+}
+.tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; padding: 4px 0; color: var(--text3); transition: color .15s; font-size: 10px; font-weight: 500; letter-spacing: 0.3px; }
+.tab svg { width: 22px; height: 22px; }
+.tab.active { color: var(--accent2); }
+.tab.active svg { filter: drop-shadow(0 0 6px rgba(123,126,248,0.5)); }
+
+/* ─── SCROLLABLE BODY ─── */
+.body { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+.body::-webkit-scrollbar { width: 4px; }
+.body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ─── CARDS ─── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.card-sm { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px; border-radius: 14px; border: none; font-family: var(--sans);
+  font-size: 16px; font-weight: 600; cursor: pointer; transition: all .15s; letter-spacing: -0.2px;
+}
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 24px rgba(91,94,244,0.35); }
+.btn-primary:hover { background: var(--accent2); box-shadow: 0 4px 32px rgba(91,94,244,0.5); }
+.btn-primary:active { transform: scale(.97); }
+.btn-ghost { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:hover { background: var(--bg2); color: var(--text); }
+.btn-danger { background: rgba(224,82,82,0.12); color: var(--red); border: 1px solid rgba(224,82,82,0.2); }
+.btn-sm { padding: 8px 16px; font-size: 14px; border-radius: 10px; }
+.btn-icon { width: 44px; height: 44px; padding: 0; border-radius: 12px; }
+.btn-full { width: 100%; }
+
+/* ─── PILL BADGE ─── */
+.pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 12px; font-weight: 500; }
+.pill-accent { background: rgba(91,94,244,0.15); color: var(--accent2); }
+.pill-gold { background: rgba(244,169,66,0.15); color: var(--gold2); }
+.pill-red { background: rgba(224,82,82,0.15); color: var(--red); }
+.pill-green { background: rgba(78,203,141,0.15); color: var(--green); }
+
+/* ─── FORM ELEMENTS ─── */
+.input {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px;
+  padding: 13px 16px; color: var(--text); font-family: var(--sans); font-size: 16px; outline: none;
+  transition: border-color .15s;
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--text3); }
+textarea.input { resize: vertical; min-height: 120px; }
+.label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; display: block; }
+.field { margin-bottom: 16px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 15px; color: var(--text); }
+.toggle-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.switch { position: relative; width: 48px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; inset: 0; background: var(--bg3); border: 1px solid var(--border2); border-radius: 100px; cursor: pointer; transition: .2s; }
+.slider::before { content:''; position:absolute; left: 3px; top: 3px; width: 20px; height: 20px; background: var(--text3); border-radius: 50%; transition: .2s; }
+.switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+.switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
+select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.range-input { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--bg3); outline: none; }
+.range-input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(91,94,244,0.4); }
+
+/* ─── HOME SCREEN ─── */
+.hero { text-align: center; padding: 32px 0 24px; }
+.hero-logo { font-size: 42px; margin-bottom: 12px; }
+.hero-title { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
+.hero-sub { font-size: 15px; color: var(--text2); margin-top: 6px; }
+.stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.stat-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; }
+.stat-num { font-size: 26px; font-weight: 600; color: var(--accent2); font-variant-numeric: tabular-nums; }
+.stat-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.playlist-row { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: pointer; transition: background .15s; }
+.playlist-row:hover { background: var(--bg2); }
+.playlist-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--accent3), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.playlist-name { font-size: 16px; font-weight: 500; }
+.playlist-count { font-size: 13px; color: var(--text3); margin-top: 2px; }
+.playlist-arrow { margin-left: auto; color: var(--text3); font-size: 18px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-title { font-size: 18px; font-weight: 600; }
+
+/* ─── PLAYER SCREEN ─── */
+.player-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; }
+.word-card {
+  width: 100%; max-width: 360px; background: var(--card);
+  border: 1px solid var(--border2); border-radius: 24px; padding: 36px 28px;
+  text-align: center; box-shadow: var(--glow), var(--shadow);
+  transition: transform .3s ease, box-shadow .3s ease;
+  position: relative; overflow: hidden;
+}
+.word-card::before {
+  content: ''; position: absolute; inset: 0; border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(91,94,244,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.word-card.speaking { animation: pulse 1.2s ease infinite; border-color: var(--accent); }
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(91,94,244,0.3), var(--shadow); }
+  50% { box-shadow: 0 0 0 12px rgba(91,94,244,0), var(--glow), var(--shadow); }
+}
+.word-num { font-size: 12px; color: var(--text3); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+.word-text { font-size: 36px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); margin-bottom: 8px; line-height: 1.1; }
+.word-phonetic { font-family: var(--mono); font-size: 15px; color: var(--accent2); margin-bottom: 16px; min-height: 22px; }
+.word-translation { font-size: 18px; color: var(--text2); min-height: 26px; transition: opacity .3s; }
+.word-translation.hidden { opacity: 0; }
+.pause-countdown {
+  font-size: 48px; font-weight: 300; color: var(--text3); font-variant-numeric: tabular-nums;
+  margin-top: 24px; min-height: 60px;
+}
+.player-controls { display: flex; align-items: center; gap: 12px; margin-top: 28px; flex-wrap: wrap; justify-content: center; }
+.ctrl-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 14px;
+  padding: 12px 16px; cursor: pointer; transition: all .15s; color: var(--text2); min-width: 64px;
+  font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.ctrl-btn svg { width: 22px; height: 22px; }
+.ctrl-btn:hover { background: var(--bg2); color: var(--text); }
+.ctrl-btn.active { background: rgba(91,94,244,0.15); border-color: var(--accent); color: var(--accent2); }
+.ctrl-btn.hard { background: rgba(224,82,82,0.12); border-color: rgba(224,82,82,0.2); color: var(--red); }
+.play-btn {
+  width: 72px; height: 72px; border-radius: 20px; background: var(--accent);
+  border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 24px rgba(91,94,244,0.4); transition: all .15s; color: #fff;
+}
+.play-btn svg { width: 28px; height: 28px; }
+.play-btn:hover { background: var(--accent2); box-shadow: 0 4px 32px rgba(91,94,244,0.55); }
+.play-btn:active { transform: scale(.95); }
+.progress-bar-wrap { width: 100%; max-width: 360px; margin-top: 20px; }
+.progress-bar-bg { width: 100%; height: 3px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+.mode-badge { padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; background: rgba(91,94,244,0.12); color: var(--accent2); display: inline-block; margin-bottom: 12px; }
+
+/* ─── WORD LIST ─── */
+.word-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 6px; }
+.word-item-text { font-size: 15px; font-weight: 500; flex: 1; }
+.word-item-trans { font-size: 13px; color: var(--text3); }
+.word-item-hard { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.word-item-btns { display: flex; gap: 6px; }
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: none; color: var(--text3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all .15s; }
+.icon-btn:hover { background: var(--bg2); color: var(--text); }
+.icon-btn.red:hover { color: var(--red); }
+
+/* ─── SETTINGS ─── */
+.settings-section { margin-bottom: 24px; }
+.settings-title { font-size: 13px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+/* ─── MODAL ─── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,10,0.75); z-index: 100; display: flex; align-items: flex-end; justify-content: center; padding: 0; animation: fadeIn .2s ease; }
+.modal-overlay.hidden { display: none; }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 24px 24px 0 0; padding: 24px 20px max(24px, env(safe-area-inset-bottom)); width: 100%; max-width: 480px; animation: slideUp .3s ease; max-height: 90dvh; overflow-y: auto; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+
+/* ─── GITHUB STATUS ─── */
+.sync-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+.sync-dot.ok { background: var(--green); }
+.sync-dot.err { background: var(--red); }
+.sync-dot.loading { background: var(--gold); animation: blink 1s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ─── EMPTY STATE ─── */
+.empty { text-align: center; padding: 48px 24px; }
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-text { font-size: 16px; color: var(--text2); margin-bottom: 8px; }
+.empty-sub { font-size: 14px; color: var(--text3); }
+
+/* ─── NOTIFICATIONS ─── */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--bg3); border: 1px solid var(--border2); border-radius: 12px; padding: 12px 20px; font-size: 14px; font-weight: 500; color: var(--text); z-index: 200; white-space: nowrap; animation: toastIn .3s ease; }
+@keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+/* ─── GITHUB SETUP ─── */
+.setup-screen { display: none; flex-direction: column; height: 100dvh; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
+.setup-screen.active { display: flex; }
+.setup-logo { font-size: 56px; margin-bottom: 20px; }
+.setup-title { font-size: 28px; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
+.setup-sub { font-size: 15px; color: var(--text2); margin-bottom: 32px; line-height: 1.6; max-width: 320px; }
+.step-card { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; text-align: left; }
+.step-num { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--accent2); margin-bottom: 6px; }
+.step-text { font-size: 14px; color: var(--text2); line-height: 1.5; }
+.step-link { color: var(--accent2); text-decoration: none; font-weight: 500; }
+.step-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- ─── SETUP SCREEN ─── -->
+<div id="setupScreen" class="setup-screen">
+  <div class="setup-logo">🔗</div>
+  <div class="setup-title">Подключи GitHub</div>
+  <div class="setup-sub">Твои слова будут автоматически сохраняться в GitHub Gist — доступно с любого устройства.</div>
+  
+  <div style="width:100%;max-width:400px">
+    <div class="step-card">
+      <div class="step-num">Шаг 1</div>
+      <div class="step-text">Перейди на <a href="https://github.com/settings/tokens/new" target="_blank" class="step-link">github.com/settings/tokens</a><br>Нажми <strong>Generate new token (classic)</strong><br>Поставь галочку <strong>gist</strong>, нажми Generate</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">Шаг 2</div>
+      <div class="step-text">Скопируй токен (начинается с ghp_...) и вставь сюда:</div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <input class="input" id="tokenInput" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label class="label">Твой GitHub username</label>
+      <input class="input" id="usernameInput" type="text" placeholder="your-username" autocomplete="off">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveGithubConfig()">Подключить и начать</button>
+    <button class="btn btn-ghost btn-full" style="margin-top:10px" onclick="skipGithub()">Пропустить (данные в браузере)</button>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ─── -->
+<div id="app" style="display:none; height:100dvh; overflow:hidden;">
+
+<!-- ═══ HOME SCREEN ═══ -->
+<div id="homeScreen" class="screen active">
+  <div class="nav">
+    <div class="nav-title">LexFlow</div>
+    <div style="display:flex;gap:8px">
+      <div class="sync-row"><div class="sync-dot" id="syncDot"></div><span id="syncStatus">—</span></div>
+      <div class="nav-icon" onclick="showModal('settingsModal')" title="Настройки">⚙️</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="hero">
+      <div class="hero-logo">🎧</div>
+      <div class="hero-title">Привет!</div>
+      <div class="hero-sub">Выбери плейлист и начни тренировку</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num" id="statToday">0</div><div class="stat-lbl">Сегодня</div></div>
+      <div class="stat-box"><div class="stat-num" id="statHard">0</div><div class="stat-lbl">Сложных</div></div>
+      <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Всего</div></div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Плейлисты</div>
+      <button class="btn btn-ghost btn-sm" onclick="showModal('newPlaylistModal')">+ Создать</button>
+    </div>
+    <div id="playlistList"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Главная
+    </div>
+    <div class="tab" onclick="switchTab('words')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Слова
+    </div>
+    <div class="tab" onclick="switchTab('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Прогресс
+    </div>
+    <div class="tab" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Настройки
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WORDS SCREEN ═══ -->
+<div id="wordsScreen" class="screen">
+  <div class="nav">
+    <div class="nav-title" id="wordsNavTitle">Слова</div>
+    <div style="display:flex;gap:8px">
+      <div class="nav-icon" onclick="showModal('importModal')">📥</div>
+      <div class="nav-icon" onclick="showModal('addWordModal')">➕</div>
+    </div>
+  </div>
+  <div class="body">
+    <div style="margin-bottom:12px; display:flex; gap:8px;">
+      <select class="input" id="filterPlaylist" style="flex:1" onchange="renderWordList()">
+        <option value="">Все слова</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="filterHard()" id="hardFilterBtn">🔴 Сложные</button>
+    </div>
+    <div id="wordList"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Главная
+    </div>
+    <div class="tab active" onclick="switchTab('words')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Слова
+    </div>
+    <div class="tab" onclick="switchTab('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Прогресс
+    </div>
+    <div class="tab" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Настройки
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STATS SCREEN ═══ -->
+<div id="statsScreen" class="screen">
+  <div class="nav"><div class="nav-title">Прогресс</div></div>
+  <div class="body">
+    <div class="card" style="text-align:center">
+      <div style="font-size:48px;margin-bottom:8px">📊</div>
+      <div class="stat-num" style="font-size:36px" id="statsToday">0</div>
+      <div style="font-size:14px;color:var(--text3);margin-top:4px">слов сегодня</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div class="stat-box"><div class="stat-num" id="statsTotal">0</div><div class="stat-lbl">Всего слов</div></div>
+      <div class="stat-box"><div class="stat-num" id="statsHard">0</div><div class="stat-lbl">Сложных</div></div>
+      <div class="stat-box"><div class="stat-num" id="statsPlaylists">0</div><div class="stat-lbl">Плейлистов</div></div>
+      <div class="stat-box"><div class="stat-num" id="statsSessions">0</div><div class="stat-lbl">Сессий</div></div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin-bottom:16px">Сложные слова</div>
+      <div id="hardWordsList"></div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Главная
+    </div>
+    <div class="tab" onclick="switchTab('words')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Слова
+    </div>
+    <div class="tab active" onclick="switchTab('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Прогресс
+    </div>
+    <div class="tab" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Настройки
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS SCREEN ═══ -->
+<div id="settingsScreen" class="screen">
+  <div class="nav"><div class="nav-title">Настройки</div></div>
+  <div class="body">
+    <div class="settings-section">
+      <div class="settings-title">Воспроизведение</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Пауза перед произношением (сек)</div><div class="toggle-sub" id="pauseBeforeVal">2 сек</div></div>
+          <input type="range" class="range-input" id="pauseBefore" min="0" max="10" value="2" style="width:120px" oninput="updateRangeLabel('pauseBefore','pauseBeforeVal','сек')">
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Пауза между словами (сек)</div><div class="toggle-sub" id="pauseAfterVal">4 сек</div></div>
+          <input type="range" class="range-input" id="pauseAfter" min="1" max="15" value="4" style="width:120px" oninput="updateRangeLabel('pauseAfter','pauseAfterVal','сек')">
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Скорость речи</div><div class="toggle-sub" id="speechRateVal">Нормальная (1.0x)</div></div>
+          <input type="range" class="range-input" id="speechRate" min="4" max="15" value="10" style="width:120px" oninput="updateSpeechRate()">
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
+          <input type="range" class="range-input" id="repeatCount" min="1" max="5" value="1" style="width:120px" oninput="updateRangeLabel('repeatCount','repeatCountVal','раз')">
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">Отображение</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Показывать перевод</div></div>
+          <label class="switch"><input type="checkbox" id="showTranslation" checked onchange="saveSettings()"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Показывать транскрипцию</div></div>
+          <label class="switch"><input type="checkbox" id="showPhonetic" checked onchange="saveSettings()"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Случайный порядок</div></div>
+          <label class="switch"><input type="checkbox" id="randomMode" checked onchange="saveSettings()"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Зацикленный режим (Loop)</div></div>
+          <label class="switch"><input type="checkbox" id="loopMode" onchange="saveSettings()"><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">GitHub синхронизация</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Статус</div><div class="toggle-sub" id="githubStatusText">Не подключён</div></div>
+          <div class="sync-dot" id="syncDot2"></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="reconnectGithub()">Изменить токен</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;margin-left:8px" onclick="syncNow()">🔄 Синхронизировать</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-title">Данные</div>
+      <div class="card">
+        <button class="btn btn-danger btn-sm" onclick="resetAll()">Сбросить все данные</button>
+      </div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Главная
+    </div>
+    <div class="tab" onclick="switchTab('words')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Слова
+    </div>
+    <div class="tab" onclick="switchTab('stats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Прогресс
+    </div>
+    <div class="tab active" onclick="switchTab('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Настройки
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PLAYER SCREEN ═══ -->
+<div id="playerScreen" class="screen">
+  <div class="nav">
+    <div class="nav-icon" onclick="stopPlayer(); showScreen('homeScreen')">←</div>
+    <div class="nav-title" id="playerTitle">Тренировка</div>
+    <div class="nav-icon" id="loopBtn" onclick="toggleLoop()" title="Loop">🔁</div>
+  </div>
+  <div class="player-body">
+    <div class="mode-badge" id="modeBadge">Random</div>
+    <div class="word-card" id="wordCard">
+      <div class="word-num" id="wordNum">1 / 10</div>
+      <div class="word-text" id="wordText">—</div>
+      <div class="word-phonetic" id="wordPhonetic"></div>
+      <div class="word-translation" id="wordTranslation"></div>
+      <div class="pause-countdown" id="pauseCountdown"></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="player-controls">
+      <div class="ctrl-btn" id="hardBtn" onclick="markHard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Сложно
+      </div>
+      <div class="ctrl-btn" onclick="prevWord()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        Назад
+      </div>
+      <button class="play-btn" id="playBtn" onclick="togglePlay()">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <div class="ctrl-btn" onclick="nextWord()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        Вперёд
+      </div>
+      <div class="ctrl-btn" id="slowBtn" onclick="toggleSlow()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Slow
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end #app -->
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- New Playlist Modal -->
+<div class="modal-overlay hidden" id="newPlaylistModal" onclick="closeModalOutside(event,'newPlaylistModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Новый плейлист</div>
+    <div class="field"><label class="label">Название</label><input class="input" id="newPlaylistName" placeholder="Например: Транспорт"></div>
+    <div class="field"><label class="label">Иконка (эмодзи)</label><input class="input" id="newPlaylistIcon" placeholder="🎯" maxlength="4"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('newPlaylistModal')">Отмена</button>
+      <button class="btn btn-primary" style="flex:1" onclick="createPlaylist()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Word Modal -->
+<div class="modal-overlay hidden" id="addWordModal" onclick="closeModalOutside(event,'addWordModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Добавить слово</div>
+    <div class="field"><label class="label">Английское слово</label><input class="input" id="newWordEn" placeholder="apple" autocapitalize="none" spellcheck="false"></div>
+    <div class="field"><label class="label">Перевод (русский)</label><input class="input" id="newWordRu" placeholder="яблоко"></div>
+    <div class="field"><label class="label">Транскрипция (необязательно)</label><input class="input" id="newWordPhonetic" placeholder="/ˈæpəl/" autocapitalize="none"></div>
+    <div class="field"><label class="label">Плейлист</label>
+      <select class="input" id="newWordPlaylist"></select>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('addWordModal')">Отмена</button>
+      <button class="btn btn-primary" style="flex:1" onclick="addWord()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay hidden" id="importModal" onclick="closeModalOutside(event,'importModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Импорт слов</div>
+    <div class="field"><label class="label">Плейлист</label>
+      <select class="input" id="importPlaylist"></select>
+    </div>
+    <div class="field">
+      <label class="label">Вставь слова (одно на строку)</label>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Формат: <span style="color:var(--accent2);font-family:var(--mono)">english = перевод</span> или просто <span style="color:var(--accent2);font-family:var(--mono)">english</span></div>
+      <textarea class="input" id="importText" placeholder="apple = яблоко&#10;book = книга&#10;computer = компьютер"></textarea>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('importModal')">Отмена</button>
+      <button class="btn btn-primary" style="flex:1" onclick="importWords()">Импортировать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Word Modal -->
+<div class="modal-overlay hidden" id="editWordModal" onclick="closeModalOutside(event,'editWordModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Редактировать слово</div>
+    <input type="hidden" id="editWordId">
+    <div class="field"><label class="label">Английское слово</label><input class="input" id="editWordEn" autocapitalize="none" spellcheck="false"></div>
+    <div class="field"><label class="label">Перевод</label><input class="input" id="editWordRu"></div>
+    <div class="field"><label class="label">Транскрипция</label><input class="input" id="editWordPhonetic" autocapitalize="none"></div>
+    <div class="field"><label class="label">Плейлист</label>
+      <select class="input" id="editWordPlaylist"></select>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('editWordModal')">Отмена</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditWord()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Select Playlist for Player -->
+<div class="modal-overlay hidden" id="playlistSelectModal" onclick="closeModalOutside(event,'playlistSelectModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Начать тренировку</div>
+    <div class="field"><label class="label">Плейлист</label>
+      <select class="input" id="playlistSelectList">
+        <option value="">Все слова</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="toggle-row" style="cursor:pointer">
+        <div><div class="toggle-label">Только сложные слова</div></div>
+        <label class="switch"><input type="checkbox" id="onlyHardMode"><span class="slider"></span></label>
+      </label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('playlistSelectModal')">Отмена</button>
+      <button class="btn btn-primary" style="flex:1" onclick="startPlayer()">▶ Старт</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal (quick) -->
+<div class="modal-overlay hidden" id="settingsModal" onclick="closeModalOutside(event,'settingsModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Быстрые настройки</div>
+    <div class="toggle-row">
+      <div class="toggle-label">Показывать перевод</div>
+      <label class="switch"><input type="checkbox" id="quickShowTranslation" onchange="syncQuickSetting('showTranslation',this)"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label">Случайный порядок</div>
+      <label class="switch"><input type="checkbox" id="quickRandomMode" onchange="syncQuickSetting('randomMode',this)"><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-label">Зацикленный режим</div>
+      <label class="switch"><input type="checkbox" id="quickLoopMode" onchange="syncQuickSetting('loopMode',this)"><span class="slider"></span></label>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="closeModal('settingsModal')">Готово</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA LAYER
+// ═══════════════════════════════════════════════════════
+
+let db = {
+  playlists: [],
+  words: [],
+  stats: { today: 0, todayDate: '', sessions: 0, hardCount: 0 },
+  settings: {
+    pauseBefore: 2, pauseAfter: 4, speechRate: 1.0, repeatCount: 1,
+    showTranslation: true, showPhonetic: true, randomMode: true, loopMode: false
+  },
+  github: { token: '', username: '', gistId: '' }
+};
+
+const STORAGE_KEY = 'lexflow_v1';
+
+function loadLocal() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) db = JSON.parse(saved);
+    if (!db.playlists) db.playlists = [];
+    if (!db.words) db.words = [];
+    if (!db.stats) db.stats = { today: 0, todayDate: '', sessions: 0, hardCount: 0 };
+    if (!db.settings) db.settings = { pauseBefore:2, pauseAfter:4, speechRate:1.0, repeatCount:1, showTranslation:true, showPhonetic:true, randomMode:true, loopMode:false };
+    if (!db.github) db.github = { token:'', username:'', gistId:'' };
+  } catch(e) { console.error(e); }
+}
+
+function saveLocal() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// Reset today stat if new day
+function checkTodayReset() {
+  const today = new Date().toDateString();
+  if (db.stats.todayDate !== today) {
+    db.stats.today = 0;
+    db.stats.todayDate = today;
+    saveLocal();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// GITHUB GIST SYNC
+// ═══════════════════════════════════════════════════════
+
+function setSyncStatus(status) {
+  const dots = document.querySelectorAll('.sync-dot');
+  const label = document.getElementById('syncStatus');
+  const label2 = document.getElementById('githubStatusText');
+  dots.forEach(d => { d.className = 'sync-dot'; if(status==='ok') d.classList.add('ok'); else if(status==='err') d.classList.add('err'); else if(status==='loading') d.classList.add('loading'); });
+  if(label) label.textContent = status==='ok'?'Синхр.':status==='err'?'Ошибка':'...';
+  if(label2) label2.textContent = db.github.token ? (status==='ok'?'Подключён ✓':status==='err'?'Ошибка':'Синхронизация...') : 'Не подключён';
+}
+
+async function syncToGist() {
+  if (!db.github.token) return;
+  setSyncStatus('loading');
+  const content = JSON.stringify({ playlists: db.playlists, words: db.words }, null, 2);
+  const headers = { 'Authorization': `token ${db.github.token}`, 'Content-Type': 'application/json' };
+  const body = JSON.stringify({ description: 'LexFlow vocabulary data', public: false, files: { 'lexflow_data.json': { content } } });
+  try {
+    let res;
+    if (db.github.gistId) {
+      res = await fetch(`https://api.github.com/gists/${db.github.gistId}`, { method: 'PATCH', headers, body });
+    } else {
+      res = await fetch('https://api.github.com/gists', { method: 'POST', headers, body });
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    db.github.gistId = data.id;
+    saveLocal();
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('Sync error:', e);
+    setSyncStatus('err');
+  }
+}
+
+async function loadFromGist() {
+  if (!db.github.token) return;
+  setSyncStatus('loading');
+  try {
+    const res = await fetch('https://api.github.com/gists', { headers: { 'Authorization': `token ${db.github.token}` } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const gists = await res.json();
+    const lexGist = gists.find(g => g.description === 'LexFlow vocabulary data');
+    if (lexGist) {
+      db.github.gistId = lexGist.id;
+      const gRes = await fetch(`https://api.github.com/gists/${lexGist.id}`, { headers: { 'Authorization': `token ${db.github.token}` } });
+      const gData = await gRes.json();
+      const content = JSON.parse(gData.files['lexflow_data.json'].content);
+      if (content.playlists) db.playlists = content.playlists;
+      if (content.words) db.words = content.words;
+      saveLocal();
+      renderAll();
+    }
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('Load gist error:', e);
+    setSyncStatus('err');
+  }
+}
+
+let syncTimer = null;
+function scheduleSync() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToGist, 2000);
+}
+
+function saveAndSync() {
+  saveLocal();
+  scheduleSync();
+}
+
+async function saveGithubConfig() {
+  const token = document.getElementById('tokenInput').value.trim();
+  const username = document.getElementById('usernameInput').value.trim();
+  if (!token || !username) { showToast('Заполни все поля'); return; }
+  db.github.token = token;
+  db.github.username = username;
+  db.github.gistId = '';
+  saveLocal();
+  document.getElementById('setupScreen').classList.remove('active');
+  document.getElementById('app').style.display = 'block';
+  renderAll();
+  await loadFromGist();
+}
+
+function skipGithub() {
+  db.github.token = '';
+  saveLocal();
+  document.getElementById('setupScreen').classList.remove('active');
+  document.getElementById('app').style.display = 'block';
+  renderAll();
+  setSyncStatus('');
+}
+
+function reconnectGithub() {
+  document.getElementById('setupScreen').classList.add('active');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('tokenInput').value = db.github.token;
+  document.getElementById('usernameInput').value = db.github.username;
+}
+
+async function syncNow() { await syncToGist(); showToast('Синхронизировано!'); }
+
+// ═══════════════════════════════════════════════════════
+// SCREENS & TABS
+// ═══════════════════════════════════════════════════════
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchTab(tab) {
+  const map = { home:'homeScreen', words:'wordsScreen', stats:'statsScreen', settings:'settingsScreen' };
+  showScreen(map[tab]);
+  document.querySelectorAll('.tabs .tab').forEach((t,i,arr) => {
+    const tabs = document.querySelectorAll('#'+map[tab]+' .tab');
+    tabs.forEach(tb => tb.classList.remove('active'));
+    const idx = ['home','words','stats','settings'].indexOf(tab);
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  });
+  if (tab === 'stats') renderStats();
+  if (tab === 'words') renderWordList();
+  if (tab === 'settings') applySettingsToUI();
+}
+
+// ═══════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════
+
+function showModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+  // Populate playlist selects in modals
+  if (id === 'addWordModal') populatePlaylistSelect('newWordPlaylist');
+  if (id === 'editWordModal') populatePlaylistSelect('editWordPlaylist');
+  if (id === 'importModal') populatePlaylistSelect('importPlaylist');
+  if (id === 'playlistSelectModal') populatePlaylistSelect('playlistSelectList', true);
+  if (id === 'settingsModal') {
+    document.getElementById('quickShowTranslation').checked = db.settings.showTranslation;
+    document.getElementById('quickRandomMode').checked = db.settings.randomMode;
+    document.getElementById('quickLoopMode').checked = db.settings.loopMode;
+  }
+}
+
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+function closeModalOutside(e, id) { if (e.target.id === id) closeModal(id); }
+
+function populatePlaylistSelect(selectId, withAll = false) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '';
+  if (withAll) sel.innerHTML = '<option value="">Все слова</option>';
+  db.playlists.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = (p.icon||'📚') + ' ' + p.name;
+    sel.appendChild(o);
+  });
+}
+
+function syncQuickSetting(key, el) {
+  db.settings[key] = el.checked;
+  const mirror = document.getElementById(key);
+  if (mirror) mirror.checked = el.checked;
+  saveAndSync();
+}
+
+// ═══════════════════════════════════════════════════════
+// PLAYLISTS
+// ═══════════════════════════════════════════════════════
+
+const PLAYLIST_EMOJIS = ['📚','🎯','🚀','💼','✈️','🏠','🎵','🌍','🔬','⚽','👔','🍕'];
+
+function renderPlaylistList() {
+  const el = document.getElementById('playlistList');
+  if (!el) return;
+  if (db.playlists.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📚</div><div class="empty-text">Плейлистов пока нет</div><div class="empty-sub">Создай первый плейлист и добавь слова</div></div>`;
+    return;
+  }
+  el.innerHTML = db.playlists.map(p => {
+    const count = db.words.filter(w => w.playlistId === p.id).length;
+    const hardCount = db.words.filter(w => w.playlistId === p.id && w.hard).length;
+    return `<div class="playlist-row" onclick="openPlaylist('${p.id}')">
+      <div class="playlist-icon">${p.icon||'📚'}</div>
+      <div style="flex:1">
+        <div class="playlist-name">${esc(p.name)}</div>
+        <div class="playlist-count">${count} слов${hardCount?' · 🔴 '+hardCount+' сложных':''}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openPlayerForPlaylist('${p.id}')">▶ Старт</button>
+        <div class="playlist-arrow">›</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function createPlaylist() {
+  const name = document.getElementById('newPlaylistName').value.trim();
+  const icon = document.getElementById('newPlaylistIcon').value.trim() || PLAYLIST_EMOJIS[Math.floor(Math.random()*PLAYLIST_EMOJIS.length)];
+  if (!name) { showToast('Введи название'); return; }
+  db.playlists.push({ id: uid(), name, icon });
+  saveAndSync();
+  closeModal('newPlaylistModal');
+  document.getElementById('newPlaylistName').value = '';
+  document.getElementById('newPlaylistIcon').value = '';
+  renderAll();
+  showToast('Плейлист создан!');
+}
+
+function openPlaylist(id) {
+  document.getElementById('filterPlaylist').value = id;
+  switchTab('words');
+}
+
+function openPlayerForPlaylist(id) {
+  document.getElementById('playlistSelectList').value = id;
+  showModal('playlistSelectModal');
+  setTimeout(() => { document.getElementById('playlistSelectList').value = id; }, 50);
+}
+
+function deletePlaylist(id) {
+  if (!confirm('Удалить плейлист? Слова останутся без плейлиста.')) return;
+  db.playlists = db.playlists.filter(p => p.id !== id);
+  db.words.filter(w => w.playlistId === id).forEach(w => w.playlistId = '');
+  saveAndSync();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════
+// WORDS
+// ═══════════════════════════════════════════════════════
+
+let showingHardOnly = false;
+
+function filterHard() {
+  showingHardOnly = !showingHardOnly;
+  document.getElementById('hardFilterBtn').classList.toggle('active', showingHardOnly);
+  document.getElementById('hardFilterBtn').style.background = showingHardOnly ? 'rgba(224,82,82,0.15)' : '';
+  document.getElementById('hardFilterBtn').style.color = showingHardOnly ? 'var(--red)' : '';
+  renderWordList();
+}
+
+function renderWordList() {
+  const el = document.getElementById('wordList');
+  if (!el) return;
+  const filterPl = document.getElementById('filterPlaylist') ? document.getElementById('filterPlaylist').value : '';
+  let words = db.words;
+  if (filterPl) words = words.filter(w => w.playlistId === filterPl);
+  if (showingHardOnly) words = words.filter(w => w.hard);
+
+  // Update filter select
+  const sel = document.getElementById('filterPlaylist');
+  if (sel && sel.options.length <= 1) {
+    db.playlists.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = (p.icon||'📚') + ' ' + p.name;
+      sel.appendChild(o);
+    });
+  }
+
+  if (words.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">Слов нет</div><div class="empty-sub">Нажми ➕ чтобы добавить слова</div></div>`;
+    return;
+  }
+  el.innerHTML = words.map(w => {
+    const pl = db.playlists.find(p => p.id === w.playlistId);
+    return `<div class="word-item">
+      ${w.hard ? '<div class="word-item-hard"></div>' : ''}
+      <div style="flex:1">
+        <div class="word-item-text">${esc(w.en)}</div>
+        <div class="word-item-trans">${esc(w.ru||'')} ${pl?'<span class="pill pill-accent">'+esc(pl.name)+'</span>':''}</div>
+      </div>
+      <div class="word-item-btns">
+        <div class="icon-btn" onclick="toggleWordHard('${w.id}')" title="${w.hard?'Убрать отметку':'Отметить сложным'}">${w.hard?'🔴':'⚪'}</div>
+        <div class="icon-btn" onclick="editWord('${w.id}')">✏️</div>
+        <div class="icon-btn red" onclick="deleteWord('${w.id}')">🗑️</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addWord() {
+  const en = document.getElementById('newWordEn').value.trim();
+  const ru = document.getElementById('newWordRu').value.trim();
+  const phonetic = document.getElementById('newWordPhonetic').value.trim();
+  const playlistId = document.getElementById('newWordPlaylist').value;
+  if (!en) { showToast('Введи слово'); return; }
+  db.words.push({ id: uid(), en, ru, phonetic, playlistId, hard: false, addedAt: Date.now() });
+  saveAndSync();
+  closeModal('addWordModal');
+  document.getElementById('newWordEn').value = '';
+  document.getElementById('newWordRu').value = '';
+  document.getElementById('newWordPhonetic').value = '';
+  renderAll();
+  showToast('Слово добавлено!');
+}
+
+function importWords() {
+  const text = document.getElementById('importText').value;
+  const playlistId = document.getElementById('importPlaylist').value;
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  let count = 0;
+  lines.forEach(line => {
+    const [left, right] = line.split(/[=\-–—:]\s*/);
+    if (!left) return;
+    const en = left.trim();
+    const ru = (right||'').trim();
+    if (en) { db.words.push({ id:uid(), en, ru, phonetic:'', playlistId, hard:false, addedAt:Date.now() }); count++; }
+  });
+  saveAndSync();
+  closeModal('importModal');
+  document.getElementById('importText').value = '';
+  renderAll();
+  showToast(`Добавлено ${count} слов!`);
+}
+
+function deleteWord(id) {
+  if (!confirm('Удалить слово?')) return;
+  db.words = db.words.filter(w => w.id !== id);
+  saveAndSync();
+  renderAll();
+}
+
+function toggleWordHard(id) {
+  const w = db.words.find(w => w.id === id);
+  if (w) { w.hard = !w.hard; saveAndSync(); renderAll(); }
+}
+
+function editWord(id) {
+  const w = db.words.find(w => w.id === id);
+  if (!w) return;
+  document.getElementById('editWordId').value = id;
+  document.getElementById('editWordEn').value = w.en;
+  document.getElementById('editWordRu').value = w.ru||'';
+  document.getElementById('editWordPhonetic').value = w.phonetic||'';
+  showModal('editWordModal');
+  setTimeout(() => { document.getElementById('editWordPlaylist').value = w.playlistId||''; }, 50);
+}
+
+function saveEditWord() {
+  const id = document.getElementById('editWordId').value;
+  const w = db.words.find(w => w.id === id);
+  if (!w) return;
+  w.en = document.getElementById('editWordEn').value.trim();
+  w.ru = document.getElementById('editWordRu').value.trim();
+  w.phonetic = document.getElementById('editWordPhonetic').value.trim();
+  w.playlistId = document.getElementById('editWordPlaylist').value;
+  saveAndSync();
+  closeModal('editWordModal');
+  renderAll();
+  showToast('Сохранено!');
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════
+
+function renderStats() {
+  const hardWords = db.words.filter(w => w.hard);
+  document.getElementById('statsToday').textContent = db.stats.today;
+  document.getElementById('statsTotal').textContent = db.words.length;
+  document.getElementById('statsHard').textContent = hardWords.length;
+  document.getElementById('statsPlaylists').textContent = db.playlists.length;
+  document.getElementById('statsSessions').textContent = db.stats.sessions;
+  const el = document.getElementById('hardWordsList');
+  if (hardWords.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">Нет сложных слов 🎉</div>'; return; }
+  el.innerHTML = hardWords.slice(0,20).map(w => `<div class="word-item" style="margin-bottom:6px">
+    <div class="word-item-hard"></div>
+    <div style="flex:1"><div class="word-item-text">${esc(w.en)}</div><div class="word-item-trans">${esc(w.ru||'')}</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="practiceWord('${w.id}')">Учить</button>
+  </div>`).join('');
+}
+
+function practiceWord(id) { /* could start mini session */ }
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS UI
+// ═══════════════════════════════════════════════════════
+
+function applySettingsToUI() {
+  const s = db.settings;
+  document.getElementById('pauseBefore').value = s.pauseBefore;
+  document.getElementById('pauseBeforeVal').textContent = s.pauseBefore + ' сек';
+  document.getElementById('pauseAfter').value = s.pauseAfter;
+  document.getElementById('pauseAfterVal').textContent = s.pauseAfter + ' сек';
+  document.getElementById('repeatCount').value = s.repeatCount;
+  document.getElementById('repeatCountVal').textContent = s.repeatCount + ' раз';
+  document.getElementById('speechRate').value = Math.round(s.speechRate * 10);
+  updateSpeechRateLabel(s.speechRate);
+  document.getElementById('showTranslation').checked = s.showTranslation;
+  document.getElementById('showPhonetic').checked = s.showPhonetic;
+  document.getElementById('randomMode').checked = s.randomMode;
+  document.getElementById('loopMode').checked = s.loopMode;
+}
+
+function updateRangeLabel(inputId, labelId, unit) {
+  const val = document.getElementById(inputId).value;
+  document.getElementById(labelId).textContent = val + ' ' + unit;
+  saveSettings();
+}
+
+function updateSpeechRate() {
+  const val = document.getElementById('speechRate').value / 10;
+  updateSpeechRateLabel(val);
+  saveSettings();
+}
+
+function updateSpeechRateLabel(val) {
+  let label = val <= 0.7 ? 'Медленная' : val <= 0.9 ? 'Медленнее' : val <= 1.1 ? 'Нормальная' : val <= 1.3 ? 'Быстрее' : 'Быстрая';
+  document.getElementById('speechRateVal').textContent = `${label} (${val.toFixed(1)}x)`;
+}
+
+function saveSettings() {
+  db.settings.pauseBefore = parseInt(document.getElementById('pauseBefore').value);
+  db.settings.pauseAfter = parseInt(document.getElementById('pauseAfter').value);
+  db.settings.speechRate = document.getElementById('speechRate').value / 10;
+  db.settings.repeatCount = parseInt(document.getElementById('repeatCount').value);
+  db.settings.showTranslation = document.getElementById('showTranslation').checked;
+  db.settings.showPhonetic = document.getElementById('showPhonetic').checked;
+  db.settings.randomMode = document.getElementById('randomMode').checked;
+  db.settings.loopMode = document.getElementById('loopMode').checked;
+  saveAndSync();
+}
+
+function resetAll() {
+  if (!confirm('Сбросить ВСЕ данные? Это нельзя отменить.')) return;
+  db.playlists = []; db.words = [];
+  db.stats = { today:0, todayDate:'', sessions:0, hardCount:0 };
+  saveAndSync();
+  renderAll();
+  showToast('Данные сброшены');
+}
+
+// ═══════════════════════════════════════════════════════
+// SPEECH ENGINE (TTS)
+// ═══════════════════════════════════════════════════════
+
+let maleVoice = null;
+let voicesLoaded = false;
+
+function loadVoices() {
+  return new Promise(resolve => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) { selectBestVoice(voices); voicesLoaded = true; resolve(); return; }
+    speechSynthesis.onvoiceschanged = () => {
+      selectBestVoice(speechSynthesis.getVoices());
+      voicesLoaded = true; resolve();
+    };
+  });
+}
+
+function selectBestVoice(voices) {
+  // Prefer English male voices
+  const maleKeywords = ['male','man','daniel','david','alex','james','thomas','ryan','rishi','oliver','arthur','george','fred'];
+  const enVoices = voices.filter(v => v.lang.startsWith('en'));
+  // Try male
+  maleVoice = enVoices.find(v => maleKeywords.some(k => v.name.toLowerCase().includes(k)));
+  // Fallback: any en-US
+  if (!maleVoice) maleVoice = enVoices.find(v => v.lang === 'en-US');
+  // Fallback: any english
+  if (!maleVoice) maleVoice = enVoices[0];
+  // Fallback: any
+  if (!maleVoice && voices.length > 0) maleVoice = voices[0];
+}
+
+function speak(text) {
+  return new Promise(resolve => {
+    // Очищаем очередь, чтобы iOS не зависала
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = db.settings.speechRate || 1;
+    
+    utterance.onend = () => {
+      document.getElementById('wordCard').classList.remove('speaking');
+      resolve();
+    };
+    
+    utterance.onerror = (e) => {
+      console.error('Speech error:', e);
+      document.getElementById('wordCard').classList.remove('speaking');
+      resolve(); // Все равно продолжаем, чтобы плейер не завис
+    };
+
+    document.getElementById('wordCard').classList.add('speaking');
+    
+    // Магия для Safari: принудительно "будим"
+    window.speechSynthesis.resume();
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// PLAYER ENGINE
+// ═══════════════════════════════════════════════════════
+
+let playerQueue = [];
+let playerIndex = 0;
+let isPlaying = false;
+let isSlowMode = false;
+let playerLoop = false;
+let playerTimer = null;
+let playerStopped = false;
+let countdownTimer = null;
+let currentWord = null;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function startPlayer() {
+  const playlistId = document.getElementById('playlistSelectList').value;
+  const onlyHard = document.getElementById('onlyHardMode').checked;
+  closeModal('playlistSelectModal');
+
+  // ИСПРАВЛЕНИЕ ДЛЯ iOS: Разблокируем синтезатор речи первым кликом
+  const unlock = new SpeechSynthesisUtterance('');
+  window.speechSynthesis.speak(unlock);
+
+  let words = db.words;
+  if (playlistId) words = words.filter(w => w.playlistId === playlistId);
+  if (onlyHard) words = words.filter(w => w.hard);
+
+  if (words.length === 0) {
+    showToast('Нет слов в плейлисте!');
+    return;
+  }
+
+  playerQueue = db.settings.randomMode ? shuffle(words) : [...words];
+  playerIndex = 0;
+  playerStopped = false;
+  isPlaying = false;
+  isSlowMode = false;
+  playerLoop = db.settings.loopMode;
+
+  const pl = db.playlists.find(p => p.id === playlistId);
+  document.getElementById('playerTitle').textContent = pl ? pl.name : 'Все слова';
+  document.getElementById('loopBtn').style.opacity = playerLoop ? '1' : '0.4';
+  document.getElementById('modeBadge').textContent = db.settings.randomMode ? '🔀 Random' : '📋 По порядку';
+  
+  db.stats.sessions++;
+  saveLocal();
+  showScreen('playerScreen');
+  displayWord(playerQueue[0]);
+
+  // Небольшая задержка перед стартом для стабильности на iPhone
+  setTimeout(() => {
+    isPlaying = true;
+    updatePlayBtn();
+    playerLoop_fn();
+  }, 500);
+}
+
+function displayWord(word) {
+  if (!word) return;
+  currentWord = word;
+  document.getElementById('wordText').textContent = word.en;
+  document.getElementById('wordPhonetic').textContent = db.settings.showPhonetic ? (word.phonetic || '') : '';
+  const transEl = document.getElementById('wordTranslation');
+  transEl.textContent = word.ru || '';
+  transEl.classList.toggle('hidden', !db.settings.showTranslation);
+  document.getElementById('wordNum').textContent = `${playerIndex+1} / ${playerQueue.length}`;
+  document.getElementById('progressFill').style.width = ((playerIndex / playerQueue.length) * 100) + '%';
+  // Hard button state
+  const hardBtn = document.getElementById('hardBtn');
+  hardBtn.classList.toggle('hard', word.hard);
+}
+
+async function play() {
+  if (isPlaying) return;
+  isPlaying = true;
+  updatePlayBtn();
+  await playerLoop_fn();
+}
+
+async function playerLoop_fn() {
+  if (!isPlaying || playerStopped) return;
+
+  const word = playerQueue[playerIndex];
+  if (!word) return;
+
+  displayWord(word);
+
+  // 1. Пауза ПЕРЕД словом
+  if (db.settings.pauseBefore > 0) {
+    await countdown(db.settings.pauseBefore);
+  }
+
+  if (!isPlaying || playerStopped) return;
+
+  // 2. Произношение (столько раз, сколько в настройках)
+  for (let r = 0; r < db.settings.repeatCount; r++) {
+    if (!isPlaying || playerStopped) break;
+    await speak(word.en);
+    if (r < db.settings.repeatCount - 1) await delay(500);
+  }
+
+  // 3. Показываем перевод после произношения
+  document.getElementById('wordTranslation').classList.remove('hidden');
+
+  // 4. Пауза ПОСЛЕ слова
+  if (db.settings.pauseAfter > 0) {
+    await countdown(db.settings.pauseAfter);
+  }
+
+  if (!isPlaying || playerStopped) return;
+
+  // 5. Переход к следующему
+  if (playerIndex < playerQueue.length - 1) {
+    playerIndex++;
+    playerLoop_fn();
+  } else if (playerLoop) {
+    playerIndex = 0;
+    playerLoop_fn();
+  } else {
+    isPlaying = false;
+    updatePlayBtn();
+    showToast('Плейлист закончен');
+  }
+}
+
+async function countdown(seconds, prefix) {
+  return new Promise(resolve => {
+    let s = seconds;
+    document.getElementById('pauseCountdown').textContent = prefix ? prefix : s;
+    const interval = setInterval(() => {
+      if (!isPlaying || playerStopped) { clearInterval(interval); resolve(); return; }
+      s--;
+      if (s <= 0) { clearInterval(interval); document.getElementById('pauseCountdown').textContent = ''; resolve(); }
+      else document.getElementById('pauseCountdown').textContent = s;
+    }, 1000);
+  });
+}
+
+function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+function togglePlay() {
+  if (isPlaying) {
+    isPlaying = false;
+    speechSynthesis.cancel();
+    updatePlayBtn();
+  } else {
+    isPlaying = true;
+    updatePlayBtn();
+    playerLoop_fn();
+  }
+}
+
+function updatePlayBtn() {
+  const icon = document.getElementById('playIcon');
+  if (isPlaying) {
+    icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+  }
+}
+
+function nextWord() {
+  speechSynthesis.cancel();
+  isPlaying = false;
+  playerIndex = Math.min(playerIndex + 1, playerQueue.length - 1);
+  displayWord(playerQueue[playerIndex]);
+  setTimeout(() => { isPlaying = true; playerLoop_fn(); }, 100);
+}
+
+function prevWord() {
+  speechSynthesis.cancel();
+  isPlaying = false;
+  playerIndex = Math.max(playerIndex - 1, 0);
+  displayWord(playerQueue[playerIndex]);
+  setTimeout(() => { isPlaying = true; playerLoop_fn(); }, 100);
+}
+
+function markHard() {
+  if (!currentWord) return;
+  const w = db.words.find(w => w.id === currentWord.id);
+  if (w) {
+    w.hard = !w.hard;
+    currentWord.hard = w.hard;
+    saveAndSync();
+    document.getElementById('hardBtn').classList.toggle('hard', w.hard);
+    showToast(w.hard ? '🔴 Отмечено как сложное' : '✓ Отметка снята');
+  }
+}
+
+function toggleSlow() {
+  isSlowMode = !isSlowMode;
+  document.getElementById('slowBtn').classList.toggle('active', isSlowMode);
+  showToast(isSlowMode ? '🐢 Медленный режим' : '⚡ Нормальная скорость');
+}
+
+function toggleLoop() {
+  playerLoop = !playerLoop;
+  db.settings.loopMode = playerLoop;
+  saveLocal();
+  document.getElementById('loopBtn').style.opacity = playerLoop ? '1' : '0.4';
+  showToast(playerLoop ? '🔁 Loop вкл.' : '🔁 Loop выкл.');
+}
+
+function stopPlayer() {
+  isPlaying = false;
+  playerStopped = true;
+  speechSynthesis.cancel();
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════════════════════
+
+function renderAll() {
+  renderPlaylistList();
+  renderWordList();
+  updateStatNumbers();
+  updateFilterSelects();
+}
+
+function updateStatNumbers() {
+  const hardCount = db.words.filter(w => w.hard).length;
+  document.getElementById('statToday').textContent = db.stats.today;
+  document.getElementById('statHard').textContent = hardCount;
+  document.getElementById('statTotal').textContent = db.words.length;
+}
+
+function updateFilterSelects() {
+  const sel = document.getElementById('filterPlaylist');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Все слова</option>';
+  db.playlists.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = (p.icon||'📚') + ' ' + p.name;
+    sel.appendChild(o);
+  });
+  sel.value = current;
+  document.getElementById('wordsNavTitle').textContent = current ? (db.playlists.find(p=>p.id===current)?.name||'Слова') : 'Слова';
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2200);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+
+async function init() {
+  loadLocal();
+  checkTodayReset();
+  await loadVoices();
+  applySettingsToUI();
+
+  if (!db.github.token && localStorage.getItem('lexflow_skipSetup') !== '1') {
+    // Show setup if no token and no skip flag
+    // Allow skipping
+    document.getElementById('setupScreen').classList.add('active');
+  } else {
+    document.getElementById('setupScreen').classList.remove('active');
+    document.getElementById('app').style.display = 'block';
+    renderAll();
+    if (db.github.token) {
+      setSyncStatus('ok');
+      loadFromGist();
+    } else {
+      setSyncStatus('');
+    }
+  }
+}
+
+// Handle skip flag
+function skipGithub() {
+  db.github.token = '';
+  saveLocal();
+  localStorage.setItem('lexflow_skipSetup','1');
+  document.getElementById('setupScreen').classList.remove('active');
+  document.getElementById('app').style.display = 'block';
+  renderAll();
+  setSyncStatus('');
+}
+
+// Handle "Start" on home screen (show playlist select)
+document.addEventListener('DOMContentLoaded', () => {
+  // Add start button to home if no playlists
+  init();
+});
+
+// Listen to settings range inputs
+['pauseBefore','pauseAfter','repeatCount'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', saveSettings);
+});
+document.getElementById('speechRate').addEventListener('change', saveSettings);
+</script>
+
+<!-- PWA Manifest inline -->
+<script>
+const manifest = {
+  name: 'LexFlow — English Trainer',
+  short_name: 'LexFlow',
+  description: 'Тренажёр английских слов',
+  start_url: '/',
+  display: 'standalone',
+  background_color: '#0a0a12',
+  theme_color: '#0a0a12',
+  icons: [
+    { src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%235b5ef4'/><text y='.9em' font-size='400' x='56'>🎧</text></svg>", sizes: '512x512', type: 'image/svg+xml' }
+  ]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+const url = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest'; link.href = url;
+document.head.appendChild(link);
+</script>
+
+<!-- Service Worker for offline -->
+<script>
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'lexflow-v1';
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
+  self.skipWaiting();
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+});
+  `;
+  const blob = new Blob([swCode], {type:'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+</script>
+</body>
+</html>
