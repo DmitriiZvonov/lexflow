@@ -1277,16 +1277,24 @@ function startPlayer() {
 function displayWord(word) {
   const wordText = document.getElementById('wordText');
   const wordTranslation = document.getElementById('wordTranslation');
+  const counter = document.getElementById('playerCounter'); // Находим счетчик
+
+  // 1. Возвращаем транскрипцию: Слово + пробел + транскрипция
+  wordText.textContent = `${word.en} ${word.ts || ''}`;
   
-  wordText.textContent = word.en;
+  // 2. Устанавливаем перевод
   wordTranslation.textContent = word.ru;
   
-  // Принудительно включаем спойлер (замыливание)
+  // 3. Оживляем счетчик: текущий номер / всего слов
+  if (counter) {
+    counter.textContent = `${playerIndex + 1} / ${playerQueue.length}`;
+  }
+  
+  // 4. Логика спойлера (замыливание)
   wordTranslation.classList.remove('hidden'); 
   wordTranslation.classList.add('spoiler');
   wordTranslation.classList.remove('revealed');
 
-  // Делаем так, чтобы клик открывал именно этот перевод
   wordTranslation.onclick = function() {
     this.classList.toggle('revealed');
   };
