@@ -243,6 +243,16 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 .step-text { font-size: 14px; color: var(--text2); line-height: 1.5; }
 .step-link { color: var(--accent2); text-decoration: none; font-weight: 500; }
 .step-link:hover { text-decoration: underline; }
+/* Эффект спойлера для перевода */
+  .spoiler {
+    filter: blur(10px);
+    cursor: pointer;
+    transition: filter 0.4s ease;
+    user-select: none;
+  }
+  .spoiler.revealed {
+    filter: blur(0);
+  }
 </style>
 </head>
 <body>
@@ -1163,27 +1173,35 @@ function selectBestVoice(voices) {
 
 function speak(text) {
   return new Promise(resolve => {
-    // Очищаем очередь, чтобы iOS не зависала
-    window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel(); // Остановка текущей речи
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
+    
+    // Пытаемся найти мужской голос
+    const voices = window.speechSynthesis.getVoices();
+    // Ищем голос, в названии которого есть "Male", "David" или "Google US English"
+    const maleVoice = voices.find(v => 
+      v.name.includes('Male') || 
+      v.name.includes('David') || 
+      v.name.includes('Google US English') ||
+      v.name.includes('Microsoft David')
+    );
+    
+    if (maleVoice) utterance.voice = maleVoice;
     utterance.rate = db.settings.speechRate || 1;
     
     utterance.onend = () => {
       document.getElementById('wordCard').classList.remove('speaking');
       resolve();
     };
-    
-    utterance.onerror = (e) => {
-      console.error('Speech error:', e);
+
+    utterance.onerror = () => {
       document.getElementById('wordCard').classList.remove('speaking');
-      resolve(); // Все равно продолжаем, чтобы плейер не завис
+      resolve();
     };
 
     document.getElementById('wordCard').classList.add('speaking');
-    
-    // Магия для Safari: принудительно "будим"
     window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   });
@@ -1256,18 +1274,21 @@ function startPlayer() {
 }
 
 function displayWord(word) {
-  if (!word) return;
-  currentWord = word;
-  document.getElementById('wordText').textContent = word.en;
-  document.getElementById('wordPhonetic').textContent = db.settings.showPhonetic ? (word.phonetic || '') : '';
-  const transEl = document.getElementById('wordTranslation');
-  transEl.textContent = word.ru || '';
-  transEl.classList.toggle('hidden', !db.settings.showTranslation);
-  document.getElementById('wordNum').textContent = `${playerIndex+1} / ${playerQueue.length}`;
-  document.getElementById('progressFill').style.width = ((playerIndex / playerQueue.length) * 100) + '%';
-  // Hard button state
-  const hardBtn = document.getElementById('hardBtn');
-  hardBtn.classList.toggle('hard', word.hard);
+  const wordText = document.getElementById('wordText');
+  const wordTranslation = document.getElementById('wordTranslation');
+  
+  wordText.textContent = word.en;
+  wordTranslation.textContent = word.ru;
+  
+  // Принудительно включаем спойлер (замыливание)
+  wordTranslation.classList.remove('hidden'); 
+  wordTranslation.classList.add('spoiler');
+  wordTranslation.classList.remove('revealed');
+
+  // Делаем так, чтобы клик открывал именно этот перевод
+  wordTranslation.onclick = function() {
+    this.classList.toggle('revealed');
+  };
 }
 
 async function play() {
