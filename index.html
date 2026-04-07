@@ -136,6 +136,16 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 .playlist-name { font-size: 16px; font-weight: 500; }
 .playlist-count { font-size: 13px; color: var(--text3); margin-top: 2px; }
 .playlist-arrow { margin-left: auto; color: var(--text3); font-size: 18px; }
+.playlist-play-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--accent); color: #fff; font-size: 14px;
+  cursor: pointer; flex-shrink: 0; border: none;
+  box-shadow: 0 2px 10px rgba(91,94,244,0.4);
+  transition: background .15s, transform .1s;
+}
+.playlist-play-btn:hover { background: var(--accent2); transform: scale(1.08); }
+.playlist-play-btn:active { transform: scale(0.95); }
 .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .section-title { font-size: 18px; font-weight: 600; }
 
@@ -253,6 +263,30 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
   .spoiler.revealed {
     filter: blur(0);
   }
+/* Стили для управления плейлистами */
+.playlist-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.playlist-actions {
+  display: flex;
+  gap: 12px;
+  margin-left: 10px;
+}
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.action-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+}
 </style>
 </head>
 <body>
@@ -311,6 +345,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       <div class="section-title">Плейлисты</div>
       <button class="btn btn-ghost btn-sm" onclick="showModal('newPlaylistModal')">+ Создать</button>
     </div>
+    <button class="btn btn-primary btn-full" style="margin-bottom:14px" onclick="showModal('playlistSelectModal')">▶ Начать тренировку</button>
     <div id="playlistList"></div>
   </div>
   <div class="tabs">
@@ -879,27 +914,57 @@ function syncQuickSetting(key, el) {
 const PLAYLIST_EMOJIS = ['📚','🎯','🚀','💼','✈️','🏠','🎵','🌍','🔬','⚽','👔','🍕'];
 
 function renderPlaylistList() {
-  const el = document.getElementById('playlistList');
-  if (!el) return;
+  const container = document.getElementById('playlistList');
+  if (!container) return;
+  container.innerHTML = '';
+
   if (db.playlists.length === 0) {
-    el.innerHTML = `<div class="empty"><div class="empty-icon">📚</div><div class="empty-text">Плейлистов пока нет</div><div class="empty-sub">Создай первый плейлист и добавь слова</div></div>`;
+    container.innerHTML = `<div class="empty"><div class="empty-icon">🎵</div><div class="empty-text">Нет плейлистов</div><div class="empty-sub">Нажми «+ Создать» чтобы добавить</div></div>`;
     return;
   }
-  el.innerHTML = db.playlists.map(p => {
-    const count = db.words.filter(w => w.playlistId === p.id).length;
-    const hardCount = db.words.filter(w => w.playlistId === p.id && w.hard).length;
-    return `<div class="playlist-row" onclick="openPlaylist('${p.id}')">
-      <div class="playlist-icon">${p.icon||'📚'}</div>
-      <div style="flex:1">
-        <div class="playlist-name">${esc(p.name)}</div>
-        <div class="playlist-count">${count} слов${hardCount?' · 🔴 '+hardCount+' сложных':''}</div>
+
+  db.playlists.forEach(pl => {
+    const wordCount = db.words.filter(w => w.playlistId === pl.id).length;
+    const row = document.createElement('div');
+    row.className = 'playlist-row';
+    row.innerHTML = `
+      <div class="playlist-icon">${pl.icon || '📚'}</div>
+      <div style="flex:1" onclick="openPlaylist('${pl.id}')">
+        <div class="playlist-name">${esc(pl.name)}</div>
+        <div class="playlist-count">${wordCount} слов</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openPlayerForPlaylist('${p.id}')">▶ Старт</button>
-        <div class="playlist-arrow">›</div>
+        <button class="action-btn" onclick="event.stopPropagation(); renamePlaylist('${pl.id}')" title="Переименовать">✏️</button>
+        <button class="action-btn" onclick="event.stopPropagation(); deletePlaylistById('${pl.id}')" title="Удалить">🗑️</button>
+        <button class="playlist-play-btn" onclick="event.stopPropagation(); openPlayerForPlaylist('${pl.id}')" title="Начать тренировку">▶</button>
       </div>
-    </div>`;
-  }).join('');
+    `;
+    container.appendChild(row);
+  });
+}
+
+function renamePlaylist(id) {
+  const pl = db.playlists.find(p => p.id === id);
+  if (!pl) return;
+  const newName = prompt('Введите новое название плейлиста:', pl.name);
+  if (newName && newName.trim() !== '') {
+    pl.name = newName.trim();
+    saveAndSync();
+    renderAll();
+  }
+}
+
+// Функция для удаления (вызывается из карточки плейлиста)
+function deletePlaylistById(id) {
+  const pl = db.playlists.find(p => p.id === id);
+  if (!pl) return;
+  if (confirm(`Удалить плейлист "${pl.name}"? Слова останутся без плейлиста.`)) {
+    db.playlists = db.playlists.filter(p => p.id !== id);
+    db.words.filter(w => w.playlistId === id).forEach(w => w.playlistId = '');
+    saveAndSync();
+    renderAll();
+    showToast('Плейлист удалён');
+  }
 }
 
 function createPlaylist() {
@@ -926,13 +991,7 @@ function openPlayerForPlaylist(id) {
   setTimeout(() => { document.getElementById('playlistSelectList').value = id; }, 50);
 }
 
-function deletePlaylist(id) {
-  if (!confirm('Удалить плейлист? Слова останутся без плейлиста.')) return;
-  db.playlists = db.playlists.filter(p => p.id !== id);
-  db.words.filter(w => w.playlistId === id).forEach(w => w.playlistId = '');
-  saveAndSync();
-  renderAll();
-}
+
 
 // ═══════════════════════════════════════════════════════
 // WORDS
@@ -1275,29 +1334,46 @@ function startPlayer() {
 }
 
 function displayWord(word) {
+  if (!word) return;
+  currentWord = word;
+
   const wordText = document.getElementById('wordText');
+  const wordPhonetic = document.getElementById('wordPhonetic');
   const wordTranslation = document.getElementById('wordTranslation');
-  const counter = document.getElementById('playerCounter'); // Находим счетчик
+  const counter = document.getElementById('wordNum');
 
-  // 1. Возвращаем транскрипцию: Слово + пробел + транскрипция
-  wordText.textContent = `${word.en} ${word.ts || ''}`;
-  
-  // 2. Устанавливаем перевод
-  wordTranslation.textContent = word.ru;
-  
-  // 3. Оживляем счетчик: текущий номер / всего слов
-  if (counter) {
-    counter.textContent = `${playerIndex + 1} / ${playerQueue.length}`;
+  // 1. СЛОВО
+  wordText.textContent = word.en;
+
+  // 2. ТРАНСКРИПЦИЯ (хранится в word.phonetic)
+  if (wordPhonetic) {
+    wordPhonetic.textContent = (db.settings.showPhonetic && word.phonetic) ? word.phonetic : '';
   }
-  
-  // 4. Логика спойлера (замыливание)
-  wordTranslation.classList.remove('hidden'); 
-  wordTranslation.classList.add('spoiler');
-  wordTranslation.classList.remove('revealed');
 
-  wordTranslation.onclick = function() {
-    this.classList.toggle('revealed');
-  };
+  // 3. ПЕРЕВОД
+  wordTranslation.textContent = word.ru || '';
+
+  // 4. СЧЁТЧИК (элемент wordNum)
+  if (counter) {
+    counter.textContent = (playerIndex + 1) + ' / ' + playerQueue.length;
+  }
+
+  // 5. Прогресс-бар
+  const fill = document.getElementById('progressFill');
+  if (fill) fill.style.width = (playerQueue.length > 1 ? (playerIndex / (playerQueue.length - 1)) * 100 : 100) + '%';
+
+  // 6. Кнопка "Сложно"
+  const hardBtn = document.getElementById('hardBtn');
+  if (hardBtn) hardBtn.classList.toggle('hard', !!word.hard);
+
+  // 7. Перевод — эффект спойлера если showTranslation выключен
+  wordTranslation.classList.remove('hidden', 'spoiler', 'revealed');
+  if (!db.settings.showTranslation) {
+    wordTranslation.classList.add('spoiler');
+    wordTranslation.onclick = function() { this.classList.toggle('revealed'); };
+  } else {
+    wordTranslation.onclick = null;
+  }
 }
 
 async function play() {
