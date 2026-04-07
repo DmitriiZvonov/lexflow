@@ -1214,6 +1214,7 @@ function speak(text) {
 let playerQueue = [];
 let playerIndex = 0;
 let isPlaying = false;
+let playerTimeout = null; // Это наш "стоп-кран" для таймеров
 let isSlowMode = false;
 let playerLoop = false;
 let playerTimer = null;
@@ -1299,6 +1300,8 @@ async function play() {
 }
 
 async function playerLoop_fn() {
+  // Очищаем старые хвосты перед началом нового круга
+  if (playerTimeout) clearTimeout(playerTimeout);
   if (!isPlaying || playerStopped) return;
 
   const word = playerQueue[playerIndex];
@@ -1306,31 +1309,31 @@ async function playerLoop_fn() {
 
   displayWord(word);
 
-  // 1. Пауза ПЕРЕД словом
-  if (db.settings.pauseBefore > 0) {
-    await countdown(db.settings.pauseBefore);
-  }
+  // Функция-помощник для пауз, которую можно прервать
+  const smartDelay = (ms) => new Promise(resolve => {
+    playerTimeout = setTimeout(resolve, ms);
+  });
 
+  // 1. Пауза ПЕРЕД словом
+  await smartDelay((db.settings.pauseBefore || 1) * 1000);
   if (!isPlaying || playerStopped) return;
 
-  // 2. Произношение (столько раз, сколько в настройках)
-  for (let r = 0; r < db.settings.repeatCount; r++) {
+  // 2. Произношение
+  for (let r = 0; r < (db.settings.repeatCount || 1); r++) {
     if (!isPlaying || playerStopped) break;
     await speak(word.en);
-    if (r < db.settings.repeatCount - 1) await delay(500);
-  }
-
-  // 3. Показываем перевод после произношения
-  document.getElementById('wordTranslation').classList.remove('hidden');
-
-  // 4. Пауза ПОСЛЕ слова
-  if (db.settings.pauseAfter > 0) {
-    await countdown(db.settings.pauseAfter);
+    // Небольшая пауза между повторами одного слова
+    await smartDelay(500);
   }
 
   if (!isPlaying || playerStopped) return;
 
-  // 5. Переход к следующему
+  // 3. Пауза ПОСЛЕ слова (время посмотреть на перевод)
+  await smartDelay((db.settings.pauseAfter || 1) * 1000);
+  
+  if (!isPlaying || playerStopped) return;
+
+  // 4. Переход к следующему слову
   if (playerIndex < playerQueue.length - 1) {
     playerIndex++;
     playerLoop_fn();
@@ -1340,7 +1343,6 @@ async function playerLoop_fn() {
   } else {
     isPlaying = false;
     updatePlayBtn();
-    showToast('Плейлист закончен');
   }
 }
 
@@ -1381,19 +1383,27 @@ function updatePlayBtn() {
 }
 
 function nextWord() {
-  speechSynthesis.cancel();
-  isPlaying = false;
-  playerIndex = Math.min(playerIndex + 1, playerQueue.length - 1);
-  displayWord(playerQueue[playerIndex]);
-  setTimeout(() => { isPlaying = true; playerLoop_fn(); }, 100);
+  // 1. Немедленно затыкаем голос
+  window.speechSynthesis.cancel();
+  // 2. Сбрасываем все таймеры ожидания
+  if (playerTimeout) clearTimeout(playerTimeout);
+  
+  if (playerIndex < playerQueue.length - 1) {
+    playerIndex++;
+    playerLoop_fn();
+  }
 }
 
 function prevWord() {
-  speechSynthesis.cancel();
-  isPlaying = false;
-  playerIndex = Math.max(playerIndex - 1, 0);
-  displayWord(playerQueue[playerIndex]);
-  setTimeout(() => { isPlaying = true; playerLoop_fn(); }, 100);
+  // 1. Немедленно затыкаем голос
+  window.speechSynthesis.cancel();
+  // 2. Сбрасываем все таймеры ожидания
+  if (playerTimeout) clearTimeout(playerTimeout);
+
+  if (playerIndex > 0) {
+    playerIndex--;
+    playerLoop_fn();
+  }
 }
 
 function markHard() {
