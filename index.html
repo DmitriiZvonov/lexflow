@@ -463,8 +463,14 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
         </div>
         <div class="toggle-row">
           <div><div class="toggle-label">Скорость речи</div><div class="toggle-sub" id="speechRateVal">Нормальная (1.0x)</div></div>
-          <input type="range" class="range-input" id="speechRate" min="4" max="15" value="10" style="width:120px" oninput="updateSpeechRate()">
+          <input type="range" class="range-input" id="speechRate" min="1" max="15" value="10" style="width:120px" oninput="updateSpeechRate()">
         </div>
+        <div class="field">
+  <label class="label">Голос озвучки</label>
+  <select class="input" id="voiceSelect" style="width: 100%; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
+    <option value="">Загрузка голосов...</option>
+  </select>
+</div>
         <div class="toggle-row">
           <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
           <input type="range" class="range-input" id="repeatCount" min="1" max="5" value="1" style="width:120px" oninput="updateRangeLabel('repeatCount','repeatCountVal','раз')">
@@ -1252,19 +1258,18 @@ function speak(text) {
     window.speechSynthesis.cancel(); // Остановка текущей речи
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
     
-    // Пытаемся найти мужской голос
-    const voices = window.speechSynthesis.getVoices();
-    // Ищем голос, в названии которого есть "Male", "David" или "Google US English"
-    const maleVoice = voices.find(v => 
-      v.name.includes('Male') || 
-      v.name.includes('David') || 
-      v.name.includes('Google US English') ||
-      v.name.includes('Microsoft David')
-    );
+    // ПРОВЕРКА: Выбран ли голос в нашем новом списке?
+    const voiceSelect = document.getElementById('voiceSelect');
+    if (voiceSelect && voices[voiceSelect.value]) {
+      // Если выбран — используем его
+      utterance.voice = voices[voiceSelect.value];
+    } else {
+      // Если нет — используем стандартный английский
+      utterance.lang = 'en-US';
+    }
     
-    if (maleVoice) utterance.voice = maleVoice;
+    // Устанавливаем скорость из настроек
     utterance.rate = db.settings.speechRate || 1;
     
     utterance.onend = () => {
@@ -1656,6 +1661,33 @@ document.addEventListener('DOMContentLoaded', () => {
   if (el) el.addEventListener('change', saveSettings);
 });
 document.getElementById('speechRate').addEventListener('change', saveSettings);
+
+// --- НОВАЯ ЛОГИКА ГОЛОСОВ ---
+let voices = []; // Создаем пустой список для голосов
+
+function populateVoiceList() {
+  // Получаем все голоса от системы
+  voices = window.speechSynthesis.getVoices();
+  const voiceSelect = document.getElementById('voiceSelect');
+  if (!voiceSelect) return;
+
+  voiceSelect.innerHTML = '';
+  
+  // Берем только английские голоса
+  voices.forEach((voice, i) => {
+    if (voice.lang.includes('en')) {
+      const option = document.createElement('option');
+      option.textContent = voice.name + ' (' + voice.lang + ')';
+      option.value = i; // Сохраняем порядковый номер голоса
+      voiceSelect.appendChild(option);
+    }
+  });
+}
+
+// Заставляем список обновляться, когда система подгрузит голоса
+window.speechSynthesis.onvoiceschanged = populateVoiceList;
+// Вызываем один раз при запуске на всякий случай
+populateVoiceList();
 </script>
 
 <!-- PWA Manifest inline -->
