@@ -981,12 +981,18 @@ function renamePlaylist(id) {
 function deletePlaylistById(id) {
   const pl = db.playlists.find(p => p.id === id);
   if (!pl) return;
-  if (confirm(`Удалить плейлист "${pl.name}"? Слова останутся без плейлиста.`)) {
+
+  // Меням текст подтверждения для ясности
+  if (confirm(`Удалить плейлист "${pl.name}" и ВСЕ слова в нем?`)) {
+    // 1. Удаляем сам плейлист
     db.playlists = db.playlists.filter(p => p.id !== id);
-    db.words.filter(w => w.playlistId === id).forEach(w => w.playlistId = '');
+    
+    // 2. УДАЛЯЕМ слова вместо того, чтобы просто стирать им ID
+    db.words = db.words.filter(w => w.playlistId !== id);
+
     saveAndSync();
     renderAll();
-    showToast('Плейлист удалён');
+    showToast('Плейлист и слова удалены');
   }
 }
 
@@ -1616,19 +1622,34 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════════
 
 async function init() {
-  loadLocal();
-  checkTodayReset();
-  await loadVoices();
-  applySettingsToUI();
+  loadLocal(); // Загружаем данные из памяти
 
+  // --- УБОРЩИК (Чистим слова без плейлистов) ---
+  if (db.words && db.playlists) {
+    const initialCount = db.words.length;
+    
+    db.words = db.words.filter(w => {
+      return w.playlistId && db.playlists.some(p => p.id === w.playlistId);
+    });
+
+    // Если уборщик что-то нашел и удалил — сохраняем изменения
+    if (db.words.length < initialCount) {
+      saveAndSync(); 
+    }
+  }
+
+  checkTodayReset();   // Проверяем сброс прогресса (1 раз)
+  await loadVoices();  // Загружаем голоса
+  applySettingsToUI(); // Применяем настройки (1 раз)
+
+  // Проверка экрана настройки
   if (!db.github.token && localStorage.getItem('lexflow_skipSetup') !== '1') {
-    // Show setup if no token and no skip flag
-    // Allow skipping
     document.getElementById('setupScreen').classList.add('active');
   } else {
     document.getElementById('setupScreen').classList.remove('active');
     document.getElementById('app').style.display = 'block';
     renderAll();
+    
     if (db.github.token) {
       setSyncStatus('ok');
       loadFromGist();
