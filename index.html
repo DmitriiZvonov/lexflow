@@ -1622,40 +1622,36 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════════
 
 async function init() {
-  loadLocal(); // Загружаем данные из памяти
+  loadLocal(); 
+  checkTodayReset();
+  await loadVoices();
+  applySettingsToUI();
 
-  // --- УБОРЩИК (Чистим слова без плейлистов) ---
-  if (db.words && db.playlists) {
-    const initialCount = db.words.length;
-    
-    db.words = db.words.filter(w => {
-      return w.playlistId && db.playlists.some(p => p.id === w.playlistId);
-    });
-
-    // Если уборщик что-то нашел и удалил — сохраняем изменения
-    if (db.words.length < initialCount) {
-      saveAndSync(); 
-    }
-  }
-
-  checkTodayReset();   // Проверяем сброс прогресса (1 раз)
-  await loadVoices();  // Загружаем голоса
-  applySettingsToUI(); // Применяем настройки (1 раз)
-
-  // Проверка экрана настройки
   if (!db.github.token && localStorage.getItem('lexflow_skipSetup') !== '1') {
     document.getElementById('setupScreen').classList.add('active');
   } else {
     document.getElementById('setupScreen').classList.remove('active');
     document.getElementById('app').style.display = 'block';
-    renderAll();
     
+    // 1. Сначала подтягиваем всё из облака
     if (db.github.token) {
       setSyncStatus('ok');
-      loadFromGist();
-    } else {
-      setSyncStatus('');
+      await loadFromGist(); // Ждем, пока загрузятся данные из GitHub
     }
+
+    // 2. И ТОЛЬКО ТЕПЕРЬ запускаем уборщика
+    if (db.words && db.playlists) {
+      const initialCount = db.words.length;
+      db.words = db.words.filter(w => w.playlistId && db.playlists.some(p => p.id === w.playlistId));
+      
+      if (db.words.length < initialCount) {
+        console.log('Уборщик удалил призраков после синхронизации');
+        saveAndSync(); // Сразу отправляем чистую базу обратно в облако
+      }
+    }
+
+    // 3. Рисуем интерфейс
+    renderAll();
   }
 }
 
@@ -1736,7 +1732,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v8';
+const CACHE = 'lexflow-v9';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
