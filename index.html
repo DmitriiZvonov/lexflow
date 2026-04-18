@@ -429,6 +429,11 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       <div id="hardWordsList"></div>
     </div>
   </div>
+  <div style="margin: 20px 0; padding: 0 10px;">
+      <button class="btn btn-outline" style="color: #ff4d4d; border-color: #ff4d4d; width: 100%;" onclick="resetAllProgress()">
+        🗑️ Сбросить весь прогресс
+      </button>
+    </div>
   <div class="tabs">
     <div class="tab" onclick="switchTab('home')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -1162,20 +1167,78 @@ function saveEditWord() {
 // STATS
 // ═══════════════════════════════════════════════════════
 
+function checkTodayReset() {
+  const today = new Date().toDateString();
+  if (db.stats.todayDate !== today) {
+    db.stats.today = 0;
+    db.stats.todayDate = today;
+    saveLocal(); // Чтобы сброс сохранился в памяти
+  }
+}
+
 function renderStats() {
+  // 1. Считаем сложные слова
   const hardWords = db.words.filter(w => w.hard);
+  
+  // 2. Считаем ВСЕ выученные слова (где стоит галочка)
+  const totalLearned = db.words.filter(w => w.learned).length;
+  
+  // 3. Считаем слова, выученные именно СЕГОДНЯ
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayCount = db.words.filter(w => w.learned && w.lastLearnedDate === todayStr).length;
+
+  // 4. Выводим цифры в окошки (теперь они будут обнуляться)
   document.getElementById('statsToday').textContent = db.stats.today;
-  document.getElementById('statsTotal').textContent = db.words.length;
+  document.getElementById('statsTotal').textContent = totalLearned; // Теперь тут только выученные!
   document.getElementById('statsHard').textContent = hardWords.length;
   document.getElementById('statsPlaylists').textContent = db.playlists.length;
   document.getElementById('statsSessions').textContent = db.stats.sessions;
+
+  // 5. Отрисовка списка сложных слов ниже
   const el = document.getElementById('hardWordsList');
-  if (hardWords.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">Нет сложных слов 🎉</div>'; return; }
-  el.innerHTML = hardWords.slice(0,20).map(w => `<div class="word-item" style="margin-bottom:6px">
-    <div class="word-item-hard"></div>
-    <div style="flex:1"><div class="word-item-text">${esc(w.en)}</div><div class="word-item-trans">${esc(w.ru||'')}</div></div>
-    <button class="btn btn-ghost btn-sm" onclick="practiceWord('${w.id}')">Учить</button>
-  </div>`).join('');
+  if (hardWords.length === 0) { 
+    el.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">Нет сложных слов 🎉</div>'; 
+    return; 
+  }
+  
+  el.innerHTML = hardWords.slice(0,20).map(w => `
+    <div class="word-item" style="margin-bottom:6px">
+      <div class="word-item-hard"></div>
+      <div style="flex:1">
+        <div class="word-item-text">${esc(w.en)}</div>
+        <div class="word-item-trans">${esc(w.ru||'')}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="practiceWord('${w.id}')">Учить</button>
+    </div>
+  `).join('');
+}
+
+function resetAllProgress() {
+  if (confirm("Вы уверены? Это обнулит все счётчики и прогресс!")) {
+    db.stats.sessions = 0;
+    db.stats.today = 0;
+    
+    db.words.forEach(w => {
+      w.learned = false;
+      w.hard = false;
+      w.lastLearnedDate = null;
+    });
+
+    saveAndSync(); // Сохраняем пустую базу
+    renderStats(); // СРАЗУ пересчитываем цифры на экране
+    alert("Прогресс сброшен!");
+  }
+}
+
+// Функция галочки (теперь записывает дату для счетчика)
+function toggleWordLearned(id) {
+  const w = db.words.find(w => w.id === id);
+  if (w) {
+    w.learned = !w.learned;
+    w.lastLearnedDate = w.learned ? new Date().toISOString().split('T')[0] : null;
+    saveAndSync();
+    renderAll();
+  }
 }
 
 function practiceWord(id) { /* could start mini session */ }
@@ -1388,6 +1451,8 @@ function startPlayer() {
 }
 
 function displayWord(word) {
+    checkTodayReset(); // Сбросит в 0, если наступил новый день
+  db.stats.today++;  // Прибавит единицу
   if (!word) return;
   currentWord = word;
 
@@ -1743,7 +1808,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v10';
+const CACHE = 'lexflow-v12';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
