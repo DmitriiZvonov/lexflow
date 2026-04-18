@@ -384,6 +384,9 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       </select>
       <button class="btn btn-ghost btn-sm" onclick="filterHard()" id="hardFilterBtn">🔴 Сложные</button>
     </div>
+    <div style="margin-bottom: 12px;">
+      <input type="text" id="searchWordInput" class="input" placeholder="Поиск (ru / en)..." oninput="renderWordList()">
+    </div>
     <div id="wordList"></div>
   </div>
   <div class="tabs">
@@ -1041,8 +1044,16 @@ function renderWordList() {
   if (!el) return;
   const filterPl = document.getElementById('filterPlaylist') ? document.getElementById('filterPlaylist').value : '';
   let words = db.words;
+  const searchInput = document.getElementById('searchWordInput');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
   if (filterPl) words = words.filter(w => w.playlistId === filterPl);
   if (showingHardOnly) words = words.filter(w => w.hard);
+  if (query) {
+    words = words.filter(w => 
+      (w.en && w.en.toLowerCase().includes(query)) || 
+      (w.ru && w.ru.toLowerCase().includes(query))
+    );
+  }
 
   // Update filter select
   const sel = document.getElementById('filterPlaylist');
