@@ -346,6 +346,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       <button class="btn btn-ghost btn-sm" onclick="showModal('newPlaylistModal')">+ Создать</button>
     </div>
     <button class="btn btn-primary btn-full" style="margin-bottom:14px" onclick="showModal('playlistSelectModal')">▶ Начать тренировку</button>
+    <button class="btn btn-full" style="margin-bottom:14px; background: var(--red); color: #fff; box-shadow: 0 4px 24px rgba(224,82,82,0.4);" onclick="startHardOnly()">🔴 Повторить только сложные слова</button>
     <div id="playlistList"></div>
   </div>
   <div class="tabs">
@@ -1444,6 +1445,44 @@ function startPlayer() {
   displayWord(playerQueue[0]);
 
   // Небольшая задержка перед стартом для стабильности на iPhone
+  setTimeout(() => {
+    isPlaying = true;
+    updatePlayBtn();
+    playerLoop_fn();
+  }, 500);
+}
+
+function startHardOnly() {
+  keepScreenAlive(); 
+  silentAudio.play().catch(e => console.log("Фоновый звук запущен"));
+
+  // Разблокировка TTS для iOS
+  const unlock = new SpeechSynthesisUtterance('');
+  window.speechSynthesis.speak(unlock);
+
+  let hardWords = db.words.filter(w => w.hard === true);
+
+  if (hardWords.length === 0) {
+    showToast('Нет сложных слов для повторения! 🎉');
+    return;
+  }
+
+  playerQueue = db.settings.randomMode ? shuffle(hardWords) : [...hardWords];
+  playerIndex = 0;
+  playerStopped = false;
+  isPlaying = false;
+  isSlowMode = false;
+  playerLoop = db.settings.loopMode;
+
+  document.getElementById('playerTitle').textContent = '🔴 Сложные слова';
+  document.getElementById('loopBtn').style.opacity = playerLoop ? '1' : '0.4';
+  document.getElementById('modeBadge').textContent = db.settings.randomMode ? '🔀 Random' : '📋 По порядку';
+  
+  db.stats.sessions++;
+  saveLocal();
+  showScreen('playerScreen');
+  displayWord(playerQueue[0]);
+
   setTimeout(() => {
     isPlaying = true;
     updatePlayBtn();
