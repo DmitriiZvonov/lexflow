@@ -1493,6 +1493,7 @@ function startHardOnly() {
 function displayWord(word) {
     checkTodayReset(); // Сбросит в 0, если наступил новый день
   db.stats.today++;  // Прибавит единицу
+  saveLocal();
   if (!word) return;
   currentWord = word;
 
@@ -1685,6 +1686,7 @@ function stopPlayer() {
     wakeLock = null;
   }
   silentAudio.pause();
+  updateStatNumbers();
 }
 
 // ═══════════════════════════════════════════════════════
