@@ -1180,8 +1180,8 @@ function renderStats() {
   // 1. Считаем сложные слова
   const hardWords = db.words.filter(w => w.hard);
   
-  // 2. Считаем ВСЕ выученные слова (где стоит галочка)
-  const totalLearned = db.words.filter(w => w.learned).length;
+  // 2. Считаем ВСЕ слова (как и должно быть в поле «Всего слов»)
+  const totalLearned = db.words.length;
   
   // 3. Считаем слова, выученные именно СЕГОДНЯ
   const todayStr = new Date().toISOString().split('T')[0];
@@ -1226,6 +1226,7 @@ function resetAllProgress() {
 
     saveAndSync(); // Сохраняем пустую базу
     renderStats(); // СРАЗУ пересчитываем цифры на экране
+    updateStatNumbers();
     alert("Прогресс сброшен!");
   }
 }
@@ -1618,6 +1619,7 @@ function markHard() {
     saveAndSync();
     document.getElementById('hardBtn').classList.toggle('hard', w.hard);
     showToast(w.hard ? '🔴 Отмечено как сложное' : '✓ Отметка снята');
+    updateStatNumbers();
   }
 }
 
@@ -1659,7 +1661,7 @@ function renderAll() {
 
 function updateStatNumbers() {
   const hardCount = db.words.filter(w => w.hard).length;
-  document.getElementById('statToday').textContent = db.stats.today;
+  document.getElementById('statToday').textContent = db.stats.today;   // ← возвращаем как было — правильное число из тренировки
   document.getElementById('statHard').textContent = hardCount;
   document.getElementById('statTotal').textContent = db.words.length;
 }
@@ -1808,7 +1810,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v12';
+const CACHE = 'lexflow-v13';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
