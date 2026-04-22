@@ -287,6 +287,52 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 .action-btn:active {
   background: rgba(255, 255, 255, 0.15);
 }
+/* ─── REORDER MODE (перетаскивание плейлистов) ─── */
+#playlistList.reordering {
+  user-select: none;
+}
+
+#playlistList.reordering .playlist-row {
+  cursor: grab;
+  position: relative;
+}
+
+#playlistList.reordering .playlist-row:active {
+  cursor: grabbing;
+}
+
+#playlistList.reordering .playlist-row.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.playlist-grip {
+  font-size: 22px;
+  color: var(--text3);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  cursor: grab;
+}
+
+#playlistList.reordering .playlist-grip {
+  color: var(--accent2);
+}
+
+.reorder-exit {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 13px;
+  background: var(--accent);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  z-index: 10;
+}
 </style>
 </head>
 <body>
@@ -722,6 +768,7 @@ let db = {
   },
   github: { token: '', username: '', gistId: '' }
 };
+let reorderMode = false;        // режим перестановки плейлистов
 
 const STORAGE_KEY = 'lexflow_v1';
 
@@ -938,24 +985,110 @@ function renderPlaylistList() {
     return;
   }
 
-  db.playlists.forEach(pl => {
+  // Кнопка «Готово» в режиме перестановки
+  if (reorderMode) {
+    const exitBtn = document.createElement('div');
+    exitBtn.className = 'reorder-exit';
+    exitBtn.textContent = '✓ Готово';
+    exitBtn.onclick = exitReorderMode;
+    container.appendChild(exitBtn);
+  }
+
+  db.playlists.forEach((pl, index) => {
     const wordCount = db.words.filter(w => w.playlistId === pl.id).length;
     const row = document.createElement('div');
     row.className = 'playlist-row';
+    row.draggable = reorderMode;
+    row.dataset.index = index;
+
+    // Долгое нажатие (long press)
+    let longPressTimer;
+    row.addEventListener('mousedown', (e) => {
+      if (reorderMode) return;
+      longPressTimer = setTimeout(() => enterReorderMode(), 500);
+    });
+    row.addEventListener('mouseup', () => clearTimeout(longPressTimer));
+    row.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
+    row.addEventListener('touchstart', (e) => {
+      if (reorderMode) return;
+      longPressTimer = setTimeout(() => enterReorderMode(), 500);
+    });
+    row.addEventListener('touchend', () => clearTimeout(longPressTimer));
+    row.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+
+    // Drag & Drop
+    row.addEventListener('dragstart', (e) => {
+      if (!reorderMode) return;
+      e.dataTransfer.effectAllowed = 'move';
+      row.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', index);
+    });
+    row.addEventListener('dragend', () => row.classList.remove('dragging'));
+
+    row.addEventListener('dragover', (e) => {
+      if (!reorderMode) return;
+      e.preventDefault();
+      const dragging = document.querySelector('.playlist-row.dragging');
+      if (dragging && dragging !== row) {
+        const rect = row.getBoundingClientRect();
+        const offset = e.clientY - rect.top;
+        if (offset < rect.height / 2) {
+          container.insertBefore(dragging, row);
+        } else {
+          container.insertBefore(dragging, row.nextSibling);
+        }
+      }
+    });
+
+    row.addEventListener('drop', (e) => {
+      if (!reorderMode) return;
+      e.preventDefault();
+      const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIndex = Array.from(container.children)
+        .filter(el => el.classList.contains('playlist-row'))
+        .indexOf(row);
+      
+      if (fromIndex !== toIndex) {
+        const moved = db.playlists.splice(fromIndex, 1)[0];
+        db.playlists.splice(toIndex, 0, moved);
+        saveAndSync();
+        renderPlaylistList();
+      }
+    });
+
     row.innerHTML = `
+      ${reorderMode ? `<div class="playlist-grip">☰</div>` : ''}
       <div class="playlist-icon">${pl.icon || '📚'}</div>
-      <div style="flex:1" onclick="openPlaylist('${pl.id}')">
+      <div style="flex:1" onclick="${reorderMode ? '' : `openPlaylist('${pl.id}')`}">
         <div class="playlist-name">${esc(pl.name)}</div>
         <div class="playlist-count">${wordCount} слов</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="action-btn" onclick="event.stopPropagation(); renamePlaylist('${pl.id}')" title="Переименовать">✏️</button>
         <button class="action-btn" onclick="event.stopPropagation(); deletePlaylistById('${pl.id}')" title="Удалить">🗑️</button>
-        <button class="playlist-play-btn" onclick="event.stopPropagation(); openPlayerForPlaylist('${pl.id}')" title="Начать тренировку">▶</button>
+        ${!reorderMode ? `<button class="playlist-play-btn" onclick="event.stopPropagation(); openPlayerForPlaylist('${pl.id}')" title="Начать тренировку">▶</button>` : ''}
       </div>
     `;
     container.appendChild(row);
   });
+}
+
+// Вход в режим перестановки (по долгому нажатию)
+function enterReorderMode() {
+  reorderMode = true;
+  const container = document.getElementById('playlistList');
+  if (container) container.classList.add('reordering');
+  renderPlaylistList();
+  showToast('Режим перестановки включён. Перетаскивай плейлисты');
+}
+
+// Выход из режима
+function exitReorderMode() {
+  reorderMode = false;
+  const container = document.getElementById('playlistList');
+  if (container) container.classList.remove('reordering');
+  renderPlaylistList();
+  showToast('Порядок плейлистов сохранён');
 }
 
 function updatePlaylistSelects() {
@@ -1851,7 +1984,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v14';
+const CACHE = 'lexflow-v15';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
