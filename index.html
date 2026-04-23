@@ -555,9 +555,12 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
         </div>
         <div class="field">
   <label class="label">Голос озвучки</label>
-  <select class="input" id="voiceSelect" style="width: 100%; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
-    <option value="">Загрузка голосов...</option>
-  </select>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <select class="input" id="voiceSelect" style="flex:1; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
+      <option value="">Автоматический (лучший доступный)</option>
+    </select>
+    <button class="btn btn-ghost btn-icon" id="testVoiceBtn" title="Прослушать голос" style="width:52px; height:52px; font-size:22px;">▶</button>
+  </div>
 </div>
         <div class="toggle-row">
           <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
@@ -1002,7 +1005,16 @@ if (id === 'importModal') populatePlaylistSelect('importPlaylist');
     document.getElementById('quickRandomMode').checked = db.settings.randomMode;
     document.getElementById('quickLoopMode').checked = db.settings.loopMode;
   }
+    // Подключаем кнопку предпрослушивания голоса
+  if (id === 'settingsModal') {
+    const testBtn = document.getElementById('testVoiceBtn');
+    if (testBtn) {
+      testBtn.onclick = testVoice;
+    }
+  }
 }
+
+
 
 // Обработчик для blur (когда пользователь вышел из поля Английское слово)
 function handlePhoneticBlur(e) {
@@ -1155,6 +1167,25 @@ function exitReorderMode() {
   if (container) container.classList.remove('reordering');
   renderPlaylistList();
   showToast('Порядок плейлистов сохранён');
+}
+
+// Предпрослушивание выбранного голоса
+function testVoice() {
+  const voiceSelect = document.getElementById('voiceSelect');
+  if (!voiceSelect) return;
+
+  const testText = "Hello, this is LexFlow. How does this voice sound?";
+
+  // Временно используем выбранный голос
+  const originalVoice = db.settings.selectedVoice;
+  if (voiceSelect.value) {
+    db.settings.selectedVoice = voiceSelect.value;
+  }
+
+  speak(testText).then(() => {
+    // Возвращаем оригинальное значение
+    db.settings.selectedVoice = originalVoice;
+  });
 }
 
 // Автоматическое получение транскрипции по английскому слову
@@ -1510,6 +1541,11 @@ function applySettingsToUI() {
   document.getElementById('loopMode').checked = s.loopMode;
     // Обновляем список голосов
   populateVoiceList();
+    // Подключаем кнопку предпрослушивания голоса (для полной вкладки Настройки)
+  const testBtn = document.getElementById('testVoiceBtn');
+  if (testBtn) {
+    testBtn.onclick = testVoice;
+  }
 }
 
 function updateRangeLabel(inputId, labelId, unit) {
@@ -2114,7 +2150,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v17';
+const CACHE = 'lexflow-v18';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
