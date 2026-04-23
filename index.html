@@ -2089,7 +2089,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.getElementById('speechRate').addEventListener('change', saveSettings);
 
-// ─── УЛУЧШЕННАЯ ЛОГИКА ГОЛОСОВ (работает стабильно на Safari) ───
+// ─── УЛУЧШЕННАЯ ЛОГИКА ГОЛОСОВ (только натуральные голоса) ───
 let voices = [];
 
 function populateVoiceList() {
@@ -2097,19 +2097,30 @@ function populateVoiceList() {
   const voiceSelect = document.getElementById('voiceSelect');
   if (!voiceSelect) return;
 
-  // Очищаем список и добавляем "Автоматический" ТОЛЬКО ОДИН РАЗ
+  // Очищаем и добавляем "Автоматический"
   voiceSelect.innerHTML = '<option value="">Автоматический (лучший доступный)</option>';
 
-  // Только английские голоса, Neural Voices в приоритете
-  const enVoices = voices
+  // Список плохих/синтетических голосов, которые мы убираем
+  const badVoices = [
+    'Альберт','Бах','Виолончель','Воббл','Джун','Прыг','Пузырь','Шепот','Шутник',
+    'Cell','Junkyard','Bubbles','Whisper','Trino','Superstar','Junior','Wobble'
+  ];
+
+  // Только английские + фильтр от плохих
+  const goodVoices = voices
     .filter(v => v.lang.startsWith('en'))
+    .filter(v => {
+      const nameLower = v.name.toLowerCase();
+      return !badVoices.some(bad => nameLower.includes(bad.toLowerCase()));
+    })
     .sort((a, b) => {
+      // Neural Voices всегда сверху
       if (a.name.includes('Neural') && !b.name.includes('Neural')) return -1;
       if (!a.name.includes('Neural') && b.name.includes('Neural')) return 1;
       return a.name.localeCompare(b.name);
     });
 
-  enVoices.forEach(voice => {
+  goodVoices.forEach(voice => {
     const option = document.createElement('option');
     const label = voice.name.includes('Neural') ? voice.name + ' ⭐' : voice.name;
     option.textContent = `${label} (${voice.lang})`;
@@ -2150,7 +2161,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v18';
+const CACHE = 'lexflow-v19';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
