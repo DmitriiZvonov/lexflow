@@ -348,6 +348,24 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
   border-radius: 9999px;
   z-index: 10;
 }
+
+/* ─── IMPROVED VOICE SELECT ─── */
+.voice-select-wrapper {
+  position: relative;
+}
+.voice-select-wrapper::after {
+  content: '🎤';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+#voiceSelect {
+  padding-right: 50px;
+}
 </style>
 </head>
 <body>
@@ -1490,6 +1508,8 @@ function applySettingsToUI() {
   document.getElementById('showPhonetic').checked = s.showPhonetic;
   document.getElementById('randomMode').checked = s.randomMode;
   document.getElementById('loopMode').checked = s.loopMode;
+    // Обновляем список голосов
+  populateVoiceList();
 }
 
 function updateRangeLabel(inputId, labelId, unit) {
@@ -1518,6 +1538,11 @@ function saveSettings() {
   db.settings.showPhonetic = document.getElementById('showPhonetic').checked;
   db.settings.randomMode = document.getElementById('randomMode').checked;
   db.settings.loopMode = document.getElementById('loopMode').checked;
+    // Сохраняем выбранный голос
+  const voiceSelect = document.getElementById('voiceSelect');
+  if (voiceSelect && voiceSelect.value) {
+    db.settings.selectedVoice = voiceSelect.value;
+  }
   saveAndSync();
 }
 
@@ -1564,21 +1589,24 @@ function selectBestVoice(voices) {
 
 function speak(text) {
   return new Promise(resolve => {
-    window.speechSynthesis.cancel(); // Остановка текущей речи
+    window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // ПРОВЕРКА: Выбран ли голос в нашем новом списке?
+    // Новый надёжный способ выбора голоса (работает на Safari)
     const voiceSelect = document.getElementById('voiceSelect');
-    if (voiceSelect && voices[voiceSelect.value]) {
-      // Если выбран — используем его
-      utterance.voice = voices[voiceSelect.value];
+    const selectedName = db.settings.selectedVoice || (voiceSelect ? voiceSelect.value : '');
+
+    if (selectedName) {
+      const foundVoice = voices.find(v => v.name === selectedName);
+      if (foundVoice) {
+        utterance.voice = foundVoice;
+      }
     } else {
-      // Если нет — используем стандартный английский
       utterance.lang = 'en-US';
     }
     
-    // Устанавливаем скорость из настроек
+    // Скорость речи остаётся как была раньше
     utterance.rate = db.settings.speechRate || 1;
     
     utterance.onend = () => {
@@ -1592,7 +1620,6 @@ function speak(text) {
     };
 
     document.getElementById('wordCard').classList.add('speaking');
-    window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   });
 }
@@ -1972,6 +1999,7 @@ async function init() {
   checkTodayReset();
   await loadVoices();
   applySettingsToUI();
+  populateVoiceList();
 
   if (!db.github.token && localStorage.getItem('lexflow_skipSetup') !== '1') {
     document.getElementById('setupScreen').classList.add('active');
@@ -2025,32 +2053,40 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.getElementById('speechRate').addEventListener('change', saveSettings);
 
-// --- НОВАЯ ЛОГИКА ГОЛОСОВ ---
-let voices = []; // Создаем пустой список для голосов
+// ─── УЛУЧШЕННАЯ ЛОГИКА ГОЛОСОВ (работает стабильно на Safari) ───
+let voices = [];
 
 function populateVoiceList() {
-  // Получаем все голоса от системы
   voices = window.speechSynthesis.getVoices();
   const voiceSelect = document.getElementById('voiceSelect');
   if (!voiceSelect) return;
 
-  voiceSelect.innerHTML = '';
-  
-  // Берем только английские голоса
-  voices.forEach((voice, i) => {
-    if (voice.lang.includes('en')) {
-      const option = document.createElement('option');
-      option.textContent = voice.name + ' (' + voice.lang + ')';
-      option.value = i; // Сохраняем порядковый номер голоса
-      voiceSelect.appendChild(option);
-    }
+  // Очищаем список и добавляем "Автоматический" ТОЛЬКО ОДИН РАЗ
+  voiceSelect.innerHTML = '<option value="">Автоматический (лучший доступный)</option>';
+
+  // Только английские голоса, Neural Voices в приоритете
+  const enVoices = voices
+    .filter(v => v.lang.startsWith('en'))
+    .sort((a, b) => {
+      if (a.name.includes('Neural') && !b.name.includes('Neural')) return -1;
+      if (!a.name.includes('Neural') && b.name.includes('Neural')) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+  enVoices.forEach(voice => {
+    const option = document.createElement('option');
+    const label = voice.name.includes('Neural') ? voice.name + ' ⭐' : voice.name;
+    option.textContent = `${label} (${voice.lang})`;
+    option.value = voice.name;
+    voiceSelect.appendChild(option);
   });
+
+  // Восстанавливаем ранее выбранный голос
+  if (db.settings.selectedVoice) {
+    voiceSelect.value = db.settings.selectedVoice;
+  }
 }
 
-// Заставляем список обновляться, когда система подгрузит голоса
-window.speechSynthesis.onvoiceschanged = populateVoiceList;
-// Вызываем один раз при запуске на всякий случай
-populateVoiceList();
 </script>
 
 <!-- PWA Manifest inline -->
@@ -2078,7 +2114,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v16';
+const CACHE = 'lexflow-v17';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
