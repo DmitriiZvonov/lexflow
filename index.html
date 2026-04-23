@@ -1629,18 +1629,18 @@ function speak(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Новый надёжный способ выбора голоса (работает на Safari)
-    // Теперь текущий выбор в настройках имеет приоритет над сохранённым
+    // Выбор голоса — теперь "Автоматический" действительно автоматический
     const voiceSelect = document.getElementById('voiceSelect');
-    const currentSelectValue = voiceSelect ? voiceSelect.value : '';
-    const selectedName = currentSelectValue || db.settings.selectedVoice;
+    const selectedValue = voiceSelect ? voiceSelect.value : '';
 
-    if (selectedName) {
-      const foundVoice = voices.find(v => v.name === selectedName);
+    if (selectedValue) {
+      // Конкретный голос выбран в настройках
+      const foundVoice = voices.find(v => v.name === selectedValue);
       if (foundVoice) {
         utterance.voice = foundVoice;
       }
     } else {
+      // Автоматический режим — полностью отдаём выбор системе (лучший женский голос iOS)
       utterance.lang = 'en-US';
     }
     
@@ -2163,7 +2163,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v20';
+const CACHE = 'lexflow-v21';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
