@@ -297,6 +297,11 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
   to { transform: rotate(360deg); }
 }
 
+/* ─── HIDE PLAYLIST SELECT WHEN INSIDE PLAYLIST ─── */
+.add-word-inside-playlist .playlist-field {
+  display: none;
+}
+
 /* ─── REORDER MODE (перетаскивание плейлистов) ─── */
 #playlistList.reordering {
   user-select: none;
@@ -670,9 +675,9 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
     <div class="field"><label class="label">Английское слово</label><input class="input" id="newWordEn" placeholder="apple" autocapitalize="none" spellcheck="false"></div>
     <div class="field"><label class="label">Перевод (русский)</label><input class="input" id="newWordRu" placeholder="яблоко"></div>
     <div class="field"><label class="label">Транскрипция (необязательно)</label><input class="input" id="newWordPhonetic" placeholder="/ˈæpəl/" autocapitalize="none"></div>
-    <div class="field"><label class="label">Плейлист</label>
-      <select class="input" id="newWordPlaylist"></select>
-    </div>
+    <div class="field playlist-field"><label class="label">Плейлист</label>
+    <select class="input" id="newWordPlaylist"></select>
+</div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('addWordModal')">Отмена</button>
       <button class="btn btn-primary" style="flex:1" onclick="addWord()">Добавить</button>
@@ -945,9 +950,24 @@ function switchTab(tab) {
 function showModal(id) {
   document.getElementById(id).classList.remove('hidden');
   // Populate playlist selects in modals
-  if (id === 'addWordModal') populatePlaylistSelect('newWordPlaylist');
-  if (id === 'editWordModal') populatePlaylistSelect('editWordPlaylist');
-  if (id === 'importModal') populatePlaylistSelect('importPlaylist');
+if (id === 'addWordModal') {
+  populatePlaylistSelect('newWordPlaylist');
+  
+  // НОВАЯ ЛОГИКА: проверяем, находимся ли мы внутри конкретного плейлиста
+  const filterSelect = document.getElementById('filterPlaylist');
+  const currentPlaylistId = filterSelect ? filterSelect.value : '';
+  
+  const modal = document.getElementById('addWordModal');
+  if (currentPlaylistId) {
+    // Мы внутри плейлиста → прячем поле выбора
+    modal.classList.add('add-word-inside-playlist');
+  } else {
+    modal.classList.remove('add-word-inside-playlist');
+  }
+}
+if (id === 'editWordModal') populatePlaylistSelect('editWordPlaylist');
+if (id === 'importModal') populatePlaylistSelect('importPlaylist');
+
       // Автозаполнение транскрипции при добавлении слова
     if (id === 'addWordModal') {
       const enInput = document.getElementById('newWordEn');
@@ -1160,18 +1180,16 @@ async function fetchPhonetic(word) {
 }
 
 function updatePlaylistSelects() {
-  // Находим выпадающий список в модальном окне
   const select = document.getElementById('newWordPlaylist');
   if (!select) return;
 
-  // Очищаем его и добавляем вариант по умолчанию
+  // Очищаем и добавляем вариант «Все слова»
   select.innerHTML = '<option value="">Все слова</option>';
 
-  // Берем все плейлисты из памяти (db) и добавляем их в список
   db.playlists.forEach(pl => {
     const opt = document.createElement('option');
-    opt.value = pl.id;      // Это скрытый ID для программы
-    opt.textContent = pl.name; // Это название, которое видишь ты
+    opt.value = pl.id;
+    opt.textContent = (pl.icon || '📚') + ' ' + pl.name;
     select.appendChild(opt);
   });
 }
@@ -1294,10 +1312,18 @@ function renderWordList() {
 }
 
 function addWord() {
-  const en = document.getElementById('newWordEn').value.trim();
-  const ru = document.getElementById('newWordRu').value.trim();
-  const phonetic = document.getElementById('newWordPhonetic').value.trim();
-  const playlistId = document.getElementById('newWordPlaylist').value;
+const en = document.getElementById('newWordEn').value.trim();
+const ru = document.getElementById('newWordRu').value.trim();
+const phonetic = document.getElementById('newWordPhonetic').value.trim();
+
+// НОВАЯ ЛОГИКА: определяем плейлист
+let playlistId = document.getElementById('newWordPlaylist').value;
+
+// Если мы внутри конкретного плейлиста (поле было скрыто) — берём его из фильтра
+if (!playlistId) {
+  const filterSelect = document.getElementById('filterPlaylist');
+  playlistId = filterSelect ? filterSelect.value : '';
+}
   if (!en) { showToast('Введи слово'); return; }
   db.words.push({ id: uid(), en, ru, phonetic, playlistId, hard: false, addedAt: Date.now() });
   saveAndSync();
@@ -2052,7 +2078,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v14';
+const CACHE = 'lexflow-v16';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
