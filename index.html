@@ -1361,25 +1361,49 @@ function renderWordList() {
 }
 
 function addWord() {
-const en = document.getElementById('newWordEn').value.trim();
-const ru = document.getElementById('newWordRu').value.trim();
-const phonetic = document.getElementById('newWordPhonetic').value.trim();
+  const en = document.getElementById('newWordEn').value.trim();
+  const ru = document.getElementById('newWordRu').value.trim();
+  const phonetic = document.getElementById('newWordPhonetic').value.trim();
 
-// НОВАЯ ЛОГИКА: определяем плейлист
-let playlistId = document.getElementById('newWordPlaylist').value;
+  // ─── ИСПРАВЛЕННАЯ ЛОГИКА ПЛЕЙЛИСТА ───
+  let playlistId = '';
 
-// Если мы внутри конкретного плейлиста (поле было скрыто) — берём его из фильтра
-if (!playlistId) {
-  const filterSelect = document.getElementById('filterPlaylist');
-  playlistId = filterSelect ? filterSelect.value : '';
-}
-  if (!en) { showToast('Введи слово'); return; }
-  db.words.push({ id: uid(), en, ru, phonetic, playlistId, hard: false, addedAt: Date.now() });
+  // 1. Проверяем, скрыто ли поле выбора (мы внутри конкретного плейлиста)
+  const modal = document.getElementById('addWordModal');
+  const isInsidePlaylist = modal.classList.contains('add-word-inside-playlist');
+
+  if (isInsidePlaylist) {
+    // Берём ID из текущего фильтра (то, в каком плейлисте мы сейчас находимся)
+    const filterSelect = document.getElementById('filterPlaylist');
+    playlistId = filterSelect ? filterSelect.value : '';
+  } else {
+    // Поле видно — берём выбранное значение из селекта
+    playlistId = document.getElementById('newWordPlaylist').value;
+  }
+
+  if (!en) { 
+    showToast('Введи слово'); 
+    return; 
+  }
+
+  db.words.push({ 
+    id: uid(), 
+    en, 
+    ru, 
+    phonetic, 
+    playlistId, 
+    hard: false, 
+    addedAt: Date.now() 
+  });
+
   saveAndSync();
   closeModal('addWordModal');
+
+  // Очищаем поля
   document.getElementById('newWordEn').value = '';
   document.getElementById('newWordRu').value = '';
   document.getElementById('newWordPhonetic').value = '';
+
   renderAll();
   showToast('Слово добавлено!');
 }
@@ -2163,7 +2187,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v21';
+const CACHE = 'lexflow-v22';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
