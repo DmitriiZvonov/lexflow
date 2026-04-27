@@ -107,23 +107,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 textarea.input { resize: vertical; min-height: 120px; }
 .label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 8px; display: block; }
 .field { margin-bottom: 16px; }
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-  gap: 16px;
-}
-
-.toggle-row:last-child {
-  border-bottom: none;
-}
-
-.toggle-row > div:first-child {
-  flex: 1;
-  min-width: 0;
-}
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
 .toggle-label { font-size: 15px; color: var(--text); }
 .toggle-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
 .switch { position: relative; width: 48px; height: 28px; }
@@ -133,69 +118,75 @@ textarea.input { resize: vertical; min-height: 120px; }
 .switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
 .switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
 select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-.range-input { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--bg3); outline: none; }
-.range-input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(91,94,244,0.4); }
 
-/* ─── КРАСИВЫЕ RANGE SLIDERS (ползунки) ─── */
+/* ─── BEAUTIFUL RANGE SLIDERS ─── */
 .range-input {
   -webkit-appearance: none;
   width: 100%;
-  height: 6px;
+  height: 8px;                    /* Толстый трек */
   border-radius: 9999px;
-  background: var(--bg3);
+  background: linear-gradient(90deg, 
+    var(--bg3) 0%, 
+    var(--accent3) 30%, 
+    var(--accent) 70%, 
+    var(--accent2) 100%);
   outline: none;
-  position: relative;
-}
-
-/* Заполненная часть трека (красивая шкала) */
-.range-input::-webkit-slider-runnable-track {
-  -webkit-appearance: none;
-  height: 6px;
-  border-radius: 9999px;
-  background: linear-gradient(to right, var(--accent), var(--accent2));
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
-}
-
-/* Ползунок — большой, белый с синей обводкой */
-.range-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 3px solid var(--accent);
-  box-shadow: 0 4px 15px rgba(91, 94, 244, 0.5),
-              0 2px 6px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  margin-top: -11px; /* выравнивание по центру трека */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
   transition: all 0.2s ease;
 }
 
-.range-input::-webkit-slider-thumb:hover {
-  transform: scale(1.12);
-  box-shadow: 0 6px 20px rgba(91, 94, 244, 0.6);
-}
-
-.range-input::-webkit-slider-thumb:active {
-  transform: scale(0.92);
-}
-
-/* Поддержка Firefox */
-.range-input::-moz-range-track {
-  height: 6px;
-  border-radius: 9999px;
-  background: linear-gradient(to right, var(--accent), var(--accent2));
-}
-
-.range-input::-moz-range-thumb {
-  width: 28px;
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;                    /* Большой ползунок */
   height: 28px;
   border-radius: 50%;
   background: #ffffff;
-  border: 3px solid var(--accent);
-  box-shadow: 0 4px 15px rgba(91, 94, 244, 0.5);
   cursor: pointer;
-} 
+  box-shadow: 
+    0 4px 12px rgba(91,94,244,0.5),
+    0 0 0 4px rgba(91,94,244,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.9);
+  border: 2px solid var(--accent);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  top: -10px;                     /* Центрируем по высоте трека */
+}
+
+.range-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 
+    0 6px 16px rgba(91,94,244,0.6),
+    0 0 0 6px rgba(91,94,244,0.25);
+}
+
+.range-input::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+}
+
+/* Для Firefox (на всякий случай) */
+.range-input {
+  accent-color: var(--accent);
+}
+
+/* Исправляем выравнивание в toggle-row */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;                    /* Добавляем отступ между текстом и слайдером */
+}
+
+.toggle-row > div:first-child {
+  flex: 1;
+  min-width: 0;                 /* Чтобы текст не ломал布局 */
+}
+
+.toggle-row input[type="range"] {
+  flex-shrink: 0;
+  width: 160px;                 /* Фиксированная ширина ползунка — не заезжает на текст */
+}
 
 /* ─── HOME SCREEN ─── */
 .hero { text-align: center; padding: 32px 0 24px; }
@@ -619,33 +610,33 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
   <div class="body">
     <div class="settings-section">
       <div class="settings-title">Воспроизведение</div>
-  <div class="card">
-  <div class="toggle-row">
-    <div><div class="toggle-label">Пауза перед произношением (сек)</div><div class="toggle-sub" id="pauseBeforeVal">2 сек</div></div>
-    <input type="range" class="range-input" id="pauseBefore" min="0" max="10" value="2" oninput="updateRangeLabel('pauseBefore','pauseBeforeVal','сек')">
-  </div>
-  <div class="toggle-row">
-    <div><div class="toggle-label">Пауза между словами (сек)</div><div class="toggle-sub" id="pauseAfterVal">4 сек</div></div>
-    <input type="range" class="range-input" id="pauseAfter" min="1" max="15" value="4" oninput="updateRangeLabel('pauseAfter','pauseAfterVal','сек')">
-  </div>
-  <div class="toggle-row">
-    <div><div class="toggle-label">Скорость речи</div><div class="toggle-sub" id="speechRateVal">Нормальная (1.0x)</div></div>
-    <input type="range" class="range-input" id="speechRate" min="1" max="15" value="10" oninput="updateSpeechRate()">
-  </div>
-  <div class="field">
-    <label class="label">Голос озвучки</label>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <select class="input" id="voiceSelect" style="flex:1; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
-        <option value="">Автоматический (лучший доступный)</option>
-      </select>
-      <button class="btn btn-ghost btn-icon" id="testVoiceBtn" title="Прослушать голос" style="width:52px; height:52px; font-size:22px;">▶</button>
-    </div>
-  </div>
-  <div class="toggle-row">
-    <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
-    <input type="range" class="range-input" id="repeatCount" min="1" max="5" value="1" oninput="updateRangeLabel('repeatCount','repeatCountVal','раз')">
+      <div class="card">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Пауза перед произношением (сек)</div><div class="toggle-sub" id="pauseBeforeVal">2 сек</div></div>
+          <input type="range" class="range-input" id="pauseBefore" min="0" max="10" value="2" style="width:120px" oninput="updateRangeLabel('pauseBefore','pauseBeforeVal','сек')">
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Пауза между словами (сек)</div><div class="toggle-sub" id="pauseAfterVal">4 сек</div></div>
+          <input type="range" class="range-input" id="pauseAfter" min="1" max="15" value="4" style="width:120px" oninput="updateRangeLabel('pauseAfter','pauseAfterVal','сек')">
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Скорость речи</div><div class="toggle-sub" id="speechRateVal">Нормальная (1.0x)</div></div>
+          <input type="range" class="range-input" id="speechRate" min="1" max="15" value="10" style="width:120px" oninput="updateSpeechRate()">
+        </div>
+        <div class="field">
+  <label class="label">Голос озвучки</label>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <select class="input" id="voiceSelect" style="flex:1; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
+      <option value="">Автоматический (лучший доступный)</option>
+    </select>
+    <button class="btn btn-ghost btn-icon" id="testVoiceBtn" title="Прослушать голос" style="width:52px; height:52px; font-size:22px;">▶</button>
   </div>
 </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
+          <input type="range" class="range-input" id="repeatCount" min="1" max="5" value="1" style="width:120px" oninput="updateRangeLabel('repeatCount','repeatCountVal','раз')">
+        </div>
+      </div>
     </div>
     <div class="settings-section">
       <div class="settings-title">Отображение</div>
