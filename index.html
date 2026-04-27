@@ -338,15 +338,18 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 }
 
 .reorder-exit {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 13px;
+  position: sticky;
+  top: 70px;
+  align-self: center;
+  font-size: 14px;
+  font-weight: 600;
   background: var(--accent);
   color: #fff;
-  padding: 4px 12px;
+  padding: 8px 20px;
   border-radius: 9999px;
-  z-index: 10;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(91,94,244,0.4);
+  margin-bottom: 16px;
 }
 
 /* ─── IMPROVED VOICE SELECT ─── */
@@ -1063,11 +1066,16 @@ function renderPlaylistList() {
     return;
   }
 
-  // Кнопка «Готово» в режиме перестановки
+  // Кнопка «Готово» в режиме перестановки — исправлено позиционирование
   if (reorderMode) {
     const exitBtn = document.createElement('div');
     exitBtn.className = 'reorder-exit';
     exitBtn.textContent = '✓ Готово';
+    exitBtn.style.position = 'sticky';
+    exitBtn.style.top = '70px';           // опускаем ниже навбара
+    exitBtn.style.zIndex = '100';
+    exitBtn.style.marginBottom = '12px';
+    exitBtn.style.alignSelf = 'center';
     exitBtn.onclick = exitReorderMode;
     container.appendChild(exitBtn);
   }
@@ -1653,18 +1661,15 @@ function speak(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Выбор голоса — теперь "Автоматический" действительно автоматический
-    const voiceSelect = document.getElementById('voiceSelect');
-    const selectedValue = voiceSelect ? voiceSelect.value : '';
-
-    if (selectedValue) {
-      // Конкретный голос выбран в настройках
-      const foundVoice = voices.find(v => v.name === selectedValue);
+      // Выбор голоса — исправлено: теперь всегда используется сохранённый голос
+    if (db.settings.selectedVoice) {
+      const foundVoice = voices.find(v => v.name === db.settings.selectedVoice);
       if (foundVoice) {
         utterance.voice = foundVoice;
       }
-    } else {
-      // Автоматический режим — полностью отдаём выбор системе (лучший женский голос iOS)
+    } 
+    // Если выбран "Автоматический" — не задаём voice, пусть система выберет лучший
+    else {
       utterance.lang = 'en-US';
     }
     
@@ -2154,9 +2159,16 @@ function populateVoiceList() {
     voiceSelect.appendChild(option);
   });
 
-  // Восстанавливаем ранее выбранный голос
+  // ВОССТАНАВЛИВАЕМ РАНЕЕ ВЫБРАННЫЙ ГОЛОС (самое важное исправление)
   if (db.settings.selectedVoice) {
-    voiceSelect.value = db.settings.selectedVoice;
+    // Проверяем, существует ли такой голос сейчас
+    const voiceExists = voices.some(v => v.name === db.settings.selectedVoice);
+    if (voiceExists) {
+      voiceSelect.value = db.settings.selectedVoice;
+    } else {
+      // Если голос исчез (редко), сбрасываем настройку
+      delete db.settings.selectedVoice;
+    }
   }
 }
 
@@ -2187,7 +2199,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v22';
+const CACHE = 'lexflow-v24';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
