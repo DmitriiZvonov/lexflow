@@ -1661,14 +1661,19 @@ function speak(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-      // Выбор голоса — исправлено: теперь всегда используется сохранённый голос
+      // Выбор голоса — критически важное исправление для сохранения после перезапуска PWA
     if (db.settings.selectedVoice) {
+      // Ищем голос по имени (самый надёжный способ)
       const foundVoice = voices.find(v => v.name === db.settings.selectedVoice);
       if (foundVoice) {
         utterance.voice = foundVoice;
+        console.log('Используем сохранённый голос:', foundVoice.name);
+      } else {
+        console.log('Сохранённый голос не найден, используем автоматический');
+        utterance.lang = 'en-US';
       }
     } 
-    // Если выбран "Автоматический" — не задаём voice, пусть система выберет лучший
+    // Автоматический режим
     else {
       utterance.lang = 'en-US';
     }
@@ -2120,7 +2125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.getElementById('speechRate').addEventListener('change', saveSettings);
 
-// ─── УЛУЧШЕННАЯ ЛОГИКА ГОЛОСОВ (только натуральные голоса) ───
+// ─── УЛУЧШЕННАЯ ЛОГИКА ГОЛОСОВ ДЛЯ iOS/Safari ───
 let voices = [];
 
 function populateVoiceList() {
@@ -2128,46 +2133,41 @@ function populateVoiceList() {
   const voiceSelect = document.getElementById('voiceSelect');
   if (!voiceSelect) return;
 
-  // Очищаем и добавляем "Автоматический"
+  // Очищаем список
   voiceSelect.innerHTML = '<option value="">Автоматический (лучший доступный)</option>';
 
-  // Список плохих/синтетических голосов, которые мы убираем
-  const badVoices = [
-    'Альберт','Бах','Виолончель','Воббл','Джун','Прыг','Пузырь','Шепот','Шутник',
-    'Cell','Junkyard','Bubbles','Whisper','Trino','Superstar','Junior','Wobble'
+  // Оставляем ТОЛЬКО 4 лучших стабильных голоса для iOS/Safari
+  const preferredVoices = [
+    { name: "Karen", lang: "en-AU" },     // Женский, Австралия (очень хороший)
+    { name: "Samantha", lang: "en-US" },  // Женский US (Kathy часто заменяется на Samantha)
+    { name: "Daniel", lang: "en-GB" },    // Мужской UK
+    { name: "Alex", lang: "en-US" }       // Мужской US
   ];
 
-  // Только английские + фильтр от плохих
-  const goodVoices = voices
-    .filter(v => v.lang.startsWith('en'))
-    .filter(v => {
-      const nameLower = v.name.toLowerCase();
-      return !badVoices.some(bad => nameLower.includes(bad.toLowerCase()));
-    })
-    .sort((a, b) => {
-      // Neural Voices всегда сверху
-      if (a.name.includes('Neural') && !b.name.includes('Neural')) return -1;
-      if (!a.name.includes('Neural') && b.name.includes('Neural')) return 1;
-      return a.name.localeCompare(b.name);
-    });
-
-  goodVoices.forEach(voice => {
-    const option = document.createElement('option');
-    const label = voice.name.includes('Neural') ? voice.name + ' ⭐' : voice.name;
-    option.textContent = `${label} (${voice.lang})`;
-    option.value = voice.name;
-    voiceSelect.appendChild(option);
+  // Добавляем только те голоса, которые действительно есть в системе
+  preferredVoices.forEach(pref => {
+    const found = voices.find(v => 
+      v.name === pref.name && 
+      v.lang.startsWith(pref.lang.substring(0,5)) // en-US, en-GB и т.д.
+    );
+    
+    if (found) {
+      const option = document.createElement('option');
+      option.value = found.name;
+      option.textContent = `${found.name} (${found.lang})`;
+      voiceSelect.appendChild(option);
+    }
   });
 
   // ВОССТАНАВЛИВАЕМ РАНЕЕ ВЫБРАННЫЙ ГОЛОС (самое важное исправление)
   if (db.settings.selectedVoice) {
-    // Проверяем, существует ли такой голос сейчас
     const voiceExists = voices.some(v => v.name === db.settings.selectedVoice);
     if (voiceExists) {
       voiceSelect.value = db.settings.selectedVoice;
     } else {
-      // Если голос исчез (редко), сбрасываем настройку
+      // Если выбранный голос пропал — сбрасываем на автоматический
       delete db.settings.selectedVoice;
+      voiceSelect.value = "";
     }
   }
 }
@@ -2199,7 +2199,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v24';
+const CACHE = 'lexflow-v25';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
