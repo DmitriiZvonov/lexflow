@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="modules/irregular-verbs/irregular-verbs.css?v=4">
 <style>
 :root {
   --bg: #0a0a12;
@@ -118,75 +119,8 @@ textarea.input { resize: vertical; min-height: 120px; }
 .switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
 .switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
 select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-
-/* ─── BEAUTIFUL RANGE SLIDERS ─── */
-.range-input {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 8px;                    /* Толстый трек */
-  border-radius: 9999px;
-  background: linear-gradient(90deg, 
-    var(--bg3) 0%, 
-    var(--accent3) 30%, 
-    var(--accent) 70%, 
-    var(--accent2) 100%);
-  outline: none;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-  transition: all 0.2s ease;
-}
-
-.range-input::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 28px;                    /* Большой ползунок */
-  height: 28px;
-  border-radius: 50%;
-  background: #ffffff;
-  cursor: pointer;
-  box-shadow: 
-    0 4px 12px rgba(91,94,244,0.5),
-    0 0 0 4px rgba(91,94,244,0.15),
-    inset 0 2px 4px rgba(255,255,255,0.9);
-  border: 2px solid var(--accent);
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  top: -10px;                     /* Центрируем по высоте трека */
-}
-
-.range-input::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 
-    0 6px 16px rgba(91,94,244,0.6),
-    0 0 0 6px rgba(91,94,244,0.25);
-}
-
-.range-input::-webkit-slider-thumb:active {
-  transform: scale(0.95);
-}
-
-/* Для Firefox (на всякий случай) */
-.range-input {
-  accent-color: var(--accent);
-}
-
-/* Исправляем выравнивание в toggle-row */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--border);
-  gap: 16px;                    /* Добавляем отступ между текстом и слайдером */
-}
-
-.toggle-row > div:first-child {
-  flex: 1;
-  min-width: 0;                 /* Чтобы текст не ломал布局 */
-}
-
-.toggle-row input[type="range"] {
-  flex-shrink: 0;
-  width: 160px;                 /* Фиксированная ширина ползунка — не заезжает на текст */
-}
+.range-input { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--bg3); outline: none; }
+.range-input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(91,94,244,0.4); }
 
 /* ─── HOME SCREEN ─── */
 .hero { text-align: center; padding: 32px 0 24px; }
@@ -218,130 +152,22 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 
 /* ─── PLAYER SCREEN ─── */
 .player-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 20px; }
-/* ─── IMPROVED WORD CARD ─── */
 .word-card {
-  width: 100%; 
-  max-width: 380px;           /* чуть шире для воздуха */
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: 28px;        /* более современный радиус */
-  padding: 40px 32px;         /* больше воздуха внутри */
-  text-align: center; 
-  box-shadow: 
-    var(--shadow),
-    0 20px 60px rgba(0, 0, 20, 0.6),
-    inset 0 1px 0 rgba(255,255,255,0.06); /* мягкая внутренняя подсветка */
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  position: relative; 
-  overflow: hidden;
-  backdrop-filter: blur(12px); /* glassmorphism эффект */
+  width: 100%; max-width: 360px; background: var(--card);
+  border: 1px solid var(--border2); border-radius: 24px; padding: 36px 28px;
+  text-align: center; box-shadow: var(--glow), var(--shadow);
+  transition: transform .3s ease, box-shadow .3s ease;
+  position: relative; overflow: hidden;
 }
-
-/* Градиентный оверлей для глубины */
 .word-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 28px;
-  background: radial-gradient(
-    ellipse at 50% 20%, 
-    rgba(91, 94, 244, 0.12) 0%, 
-    transparent 70%
-  );
+  content: ''; position: absolute; inset: 0; border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(91,94,244,0.08) 0%, transparent 70%);
   pointer-events: none;
-  z-index: 1;
-  opacity: 0.8;
-  transition: opacity 0.4s ease;
 }
-
-/* Улучшенный glow при озвучке */
-.word-card.speaking {
-  border-color: var(--accent2);
-  box-shadow: 
-    0 0 0 1px rgba(123, 126, 248, 0.6),
-    0 0 60px rgba(91, 94, 244, 0.45),
-    var(--shadow),
-    0 25px 70px rgba(91, 94, 244, 0.25);
-  transform: translateY(-4px) scale(1.015); /* лёгкий подъём */
-}
-
-.word-card.speaking::before {
-  opacity: 1;
-  background: radial-gradient(
-    ellipse at 50% 15%, 
-    rgba(123, 126, 248, 0.25) 0%, 
-    transparent 65%
-  );
-}
-
-/* Плавная анимация пульса (более мягкая и современная) */
-@keyframes speakingPulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 1px rgba(123,126,248,0.4), var(--shadow), 0 20px 60px rgba(0,0,20,0.6); 
-  }
-  50% { 
-    box-shadow: 0 0 0 12px rgba(91,94,244,0.15), 
-                0 0 80px rgba(91,94,244,0.5), 
-                var(--shadow); 
-  }
-}
-
-.word-card.speaking {
-  animation: speakingPulse 2.2s ease-in-out infinite;
-}
-
-/* Типографика — более премиум */
-.word-text {
-  font-size: 42px;            /* крупнее и заметнее */
-  font-weight: 700;
-  letter-spacing: -0.8px;
-  line-height: 1.05;
-  color: var(--text);
-  margin-bottom: 12px;
-  transition: all 0.3s ease;
-}
-
-.word-phonetic {
-  font-family: var(--mono);
-  font-size: 16.5px;
-  color: var(--accent2);
-  margin-bottom: 18px;
-  min-height: 24px;
-  letter-spacing: 0.5px;
-  opacity: 0.95;
-}
-
-.word-translation {
-  font-size: 19.5px;
-  color: var(--text2);
-  line-height: 1.35;
-  min-height: 52px;
-  transition: all 0.4s ease;
-  padding: 8px 0;
-}
-
-/* Улучшенный спойлер перевода */
-.word-translation.spoiler {
-  filter: blur(8px);
-  cursor: pointer;
-  user-select: none;
-  transition: filter 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.word-translation.spoiler.revealed,
-.word-translation:not(.spoiler) {
-  filter: blur(0);
-}
-
-/* Номер слова и прогресс — аккуратнее */
-.word-num {
-  font-size: 13px;
-  color: var(--text3);
-  font-weight: 600;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  margin-bottom: 28px;
-  opacity: 0.85;
+.word-card.speaking { animation: pulse 1.2s ease infinite; border-color: var(--accent); }
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(91,94,244,0.3), var(--shadow); }
+  50% { box-shadow: 0 0 0 12px rgba(91,94,244,0), var(--glow), var(--shadow); }
 }
 .word-num { font-size: 12px; color: var(--text3); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
 .word-text { font-size: 36px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); margin-bottom: 8px; line-height: 1.1; }
@@ -462,88 +288,6 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 .action-btn:active {
   background: rgba(255, 255, 255, 0.15);
 }
-
-/* ─── AUTO PHONETIC LOADING ─── */
-.phonetic-loading {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ─── HIDE PLAYLIST SELECT WHEN INSIDE PLAYLIST ─── */
-.add-word-inside-playlist .playlist-field {
-  display: none;
-}
-
-/* ─── REORDER MODE (перетаскивание плейлистов) ─── */
-#playlistList.reordering {
-  user-select: none;
-}
-
-#playlistList.reordering .playlist-row {
-  cursor: grab;
-  position: relative;
-}
-
-#playlistList.reordering .playlist-row:active {
-  cursor: grabbing;
-}
-
-#playlistList.reordering .playlist-row.dragging {
-  opacity: 0.4;
-  transform: scale(0.98);
-}
-
-.playlist-grip {
-  font-size: 22px;
-  color: var(--text3);
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
-  cursor: grab;
-}
-
-#playlistList.reordering .playlist-grip {
-  color: var(--accent2);
-}
-
-.reorder-exit {
-  position: sticky;
-  top: 70px;
-  align-self: center;
-  font-size: 14px;
-  font-weight: 600;
-  background: var(--accent);
-  color: #fff;
-  padding: 8px 20px;
-  border-radius: 9999px;
-  z-index: 100;
-  box-shadow: 0 4px 15px rgba(91,94,244,0.4);
-  margin-bottom: 16px;
-}
-
-/* ─── IMPROVED VOICE SELECT ─── */
-.voice-select-wrapper {
-  position: relative;
-}
-.voice-select-wrapper::after {
-  content: '🎤';
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  pointer-events: none;
-  opacity: 0.6;
-}
-#voiceSelect {
-  padding-right: 50px;
-}
 </style>
 </head>
 <body>
@@ -598,12 +342,19 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       <div class="stat-box"><div class="stat-num" id="statHard">0</div><div class="stat-lbl">Сложных</div></div>
       <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Всего</div></div>
     </div>
+    <button class="iv-home-card" onclick="IrregularTrainer.open()">
+      <span class="iv-home-icon">🔤</span>
+      <span>
+        <span class="iv-home-title">Неправильные глаголы</span>
+        <span class="iv-home-sub">Голосовой тренажёр: 1-я, 2-я и 3-я формы</span>
+      </span>
+      <span class="iv-home-arrow">›</span>
+    </button>
     <div class="section-header">
       <div class="section-title">Плейлисты</div>
       <button class="btn btn-ghost btn-sm" onclick="showModal('newPlaylistModal')">+ Создать</button>
     </div>
     <button class="btn btn-primary btn-full" style="margin-bottom:14px" onclick="showModal('playlistSelectModal')">▶ Начать тренировку</button>
-    <button class="btn btn-full" style="margin-bottom:14px; background: var(--red); color: #fff; box-shadow: 0 4px 24px rgba(224,82,82,0.4);" onclick="startHardOnly()">🔴 Повторить только сложные слова</button>
     <div id="playlistList"></div>
   </div>
   <div class="tabs">
@@ -626,6 +377,77 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
   </div>
 </div>
 
+<!-- ═══ IRREGULAR VERBS SCREEN (separate module) ═══ -->
+<div id="irregularScreen" class="screen">
+  <div class="nav">
+    <div class="nav-icon" onclick="IrregularTrainer.close()" title="Назад">←</div>
+    <div class="nav-title">Неправильные глаголы</div>
+    <div class="nav-icon" onclick="IrregularTrainer.toggleSettings()" title="Настройки тренажёра">⚙️</div>
+  </div>
+  <div class="iv-screen-body">
+    <div class="iv-shell">
+      <div class="iv-topline">
+        <span id="ivCount">1 / 1</span>
+        <div class="iv-progress-track"><div id="ivProgressFill" class="iv-progress-fill"></div></div>
+      </div>
+
+      <div class="iv-prompt">
+        <div id="ivRussian" class="iv-ru">идти / ехать</div>
+        <div class="iv-hint">Произнеси английские формы. Можно в любом порядке.</div>
+      </div>
+
+      <div class="iv-forms">
+        <div id="ivForm0" class="iv-form-card" onclick="IrregularTrainer.revealForm(0)">
+          <div class="iv-form-label">1-я форма · Infinitive</div>
+          <div class="iv-form-content"><div id="ivWord0" class="iv-form-word">go</div><div id="ivPhonetic0" class="iv-form-phonetic">/ɡəʊ/ · гоу</div></div>
+        </div>
+        <div id="ivForm1" class="iv-form-card" onclick="IrregularTrainer.revealForm(1)">
+          <div class="iv-form-label">2-я форма · Past Simple</div>
+          <div class="iv-form-content"><div id="ivWord1" class="iv-form-word">went</div><div id="ivPhonetic1" class="iv-form-phonetic">/went/ · уэнт</div></div>
+        </div>
+        <div id="ivForm2" class="iv-form-card" onclick="IrregularTrainer.revealForm(2)">
+          <div class="iv-form-label">3-я форма · Past Participle</div>
+          <div class="iv-form-content"><div id="ivWord2" class="iv-form-word">gone</div><div id="ivPhonetic2" class="iv-form-phonetic">/ɡɒn/ · гон</div></div>
+        </div>
+      </div>
+
+      <div class="iv-mic-panel">
+        <button id="ivMicBtn" class="iv-mic-btn" onclick="IrregularTrainer.toggleListening()" aria-label="Микрофон">🎤</button>
+        <div id="ivMicStatus" class="iv-mic-status">Нажми на микрофон и произнеси форму</div>
+        <div id="ivHeard" class="iv-heard"></div>
+        <button id="ivTextModeBtn" class="iv-text-mode-btn" onclick="IrregularTrainer.toggleTextMode()">⌨️ Не могу говорить</button>
+        <div id="ivTextPanel" class="iv-text-panel hidden">
+          <div class="iv-text-row">
+            <input id="ivTextInput" class="iv-text-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Введите английскую форму">
+            <button id="ivCheckBtn" type="button" class="btn btn-primary iv-check-btn">Проверить</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="ivSettings" class="iv-settings hidden">
+        <div class="iv-settings-title">Настройки тренажёра</div>
+        <div class="iv-setting-row">
+          <div><div class="iv-setting-name">Размывать формы</div><div class="iv-setting-sub">Нажатие на карточку временно показывает подсказку</div></div>
+          <label class="switch"><input id="ivBlurToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('blurForms',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="iv-setting-row">
+          <div><div class="iv-setting-name">Звук ошибки</div><div class="iv-setting-sub">Короткий сигнал при неверном ответе</div></div>
+          <label class="switch"><input id="ivSoundToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('errorSound',this.checked)"><span class="slider"></span></label>
+        </div>
+        <div class="iv-setting-row">
+          <div><div class="iv-setting-name">Случайный порядок глаголов</div><div class="iv-setting-sub">Перемешивать список при запуске</div></div>
+          <label class="switch"><input id="ivRandomToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('randomOrder',this.checked)"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="iv-footer">
+        <button id="ivNextBtn" class="btn btn-primary iv-next" onclick="IrregularTrainer.next()" disabled>Далее →</button>
+      </div>
+      <div class="iv-support-note">Голосовое распознавание работает через возможности браузера. Для лучшей совместимости используй Google Chrome и разреши доступ к микрофону.</div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ WORDS SCREEN ═══ -->
 <div id="wordsScreen" class="screen">
   <div class="nav">
@@ -636,14 +458,17 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
     </div>
   </div>
   <div class="body">
+     <div style="margin-bottom: 15px; position: relative;">
+  <input type="text" id="wordSearch" placeholder="Поиск слова или перевода..." 
+    style="width: 100%; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-size: 14px; outline: none;"
+    oninput="renderWords()">
+  <span style="position: absolute; right: 15px; top: 12px; opacity: 0.5;">🔍</span>
+</div>
     <div style="margin-bottom:12px; display:flex; gap:8px;">
       <select class="input" id="filterPlaylist" style="flex:1" onchange="renderWordList()">
         <option value="">Все слова</option>
       </select>
       <button class="btn btn-ghost btn-sm" onclick="filterHard()" id="hardFilterBtn">🔴 Сложные</button>
-    </div>
-    <div style="margin-bottom: 12px;">
-      <input type="text" id="searchWordInput" class="input" placeholder="Поиск (ru / en)..." oninput="renderWordList()">
     </div>
     <div id="wordList"></div>
   </div>
@@ -687,11 +512,6 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       <div id="hardWordsList"></div>
     </div>
   </div>
-  <div style="margin: 20px 0; padding: 0 10px;">
-      <button class="btn btn-outline" style="color: #ff4d4d; border-color: #ff4d4d; width: 100%;" onclick="resetAllProgress()">
-        🗑️ Сбросить весь прогресс
-      </button>
-    </div>
   <div class="tabs">
     <div class="tab" onclick="switchTab('home')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -733,12 +553,9 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
         </div>
         <div class="field">
   <label class="label">Голос озвучки</label>
-  <div style="display:flex; gap:8px; align-items:center;">
-    <select class="input" id="voiceSelect" style="flex:1; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
-      <option value="">Автоматический (лучший доступный)</option>
-    </select>
-    <button class="btn btn-ghost btn-icon" id="testVoiceBtn" title="Прослушать голос" style="width:52px; height:52px; font-size:22px;">▶</button>
-  </div>
+  <select class="input" id="voiceSelect" style="width: 100%; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
+    <option value="">Загрузка голосов...</option>
+  </select>
 </div>
         <div class="toggle-row">
           <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
@@ -874,9 +691,9 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
     <div class="field"><label class="label">Английское слово</label><input class="input" id="newWordEn" placeholder="apple" autocapitalize="none" spellcheck="false"></div>
     <div class="field"><label class="label">Перевод (русский)</label><input class="input" id="newWordRu" placeholder="яблоко"></div>
     <div class="field"><label class="label">Транскрипция (необязательно)</label><input class="input" id="newWordPhonetic" placeholder="/ˈæpəl/" autocapitalize="none"></div>
-    <div class="field playlist-field"><label class="label">Плейлист</label>
-    <select class="input" id="newWordPlaylist"></select>
-</div>
+    <div class="field"><label class="label">Плейлист</label>
+      <select class="input" id="newWordPlaylist"></select>
+    </div>
     <div style="display:flex;gap:10px">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal('addWordModal')">Отмена</button>
       <button class="btn btn-primary" style="flex:1" onclick="addWord()">Добавить</button>
@@ -982,7 +799,6 @@ let db = {
   },
   github: { token: '', username: '', gistId: '' }
 };
-let reorderMode = false;        // режим перестановки плейлистов
 
 const STORAGE_KEY = 'lexflow_v1';
 
@@ -1129,6 +945,9 @@ function showScreen(id) {
 }
 
 function switchTab(tab) {
+  // При смене любой вкладки очищаем поле поиска, чтобы не было путаницы
+  const sInput = document.getElementById('wordSearch');
+  if (sInput) sInput.value = '';
   const map = { home:'homeScreen', words:'wordsScreen', stats:'statsScreen', settings:'settingsScreen' };
   showScreen(map[tab]);
   document.querySelectorAll('.tabs .tab').forEach((t,i,arr) => {
@@ -1149,56 +968,14 @@ function switchTab(tab) {
 function showModal(id) {
   document.getElementById(id).classList.remove('hidden');
   // Populate playlist selects in modals
-if (id === 'addWordModal') {
-  populatePlaylistSelect('newWordPlaylist');
-  
-  // НОВАЯ ЛОГИКА: проверяем, находимся ли мы внутри конкретного плейлиста
-  const filterSelect = document.getElementById('filterPlaylist');
-  const currentPlaylistId = filterSelect ? filterSelect.value : '';
-  
-  const modal = document.getElementById('addWordModal');
-  if (currentPlaylistId) {
-    // Мы внутри плейлиста → прячем поле выбора
-    modal.classList.add('add-word-inside-playlist');
-  } else {
-    modal.classList.remove('add-word-inside-playlist');
-  }
-}
-if (id === 'editWordModal') populatePlaylistSelect('editWordPlaylist');
-if (id === 'importModal') populatePlaylistSelect('importPlaylist');
-
-      // Автозаполнение транскрипции при добавлении слова
-    if (id === 'addWordModal') {
-      const enInput = document.getElementById('newWordEn');
-      if (enInput) {
-        // Удаляем старый listener, если был
-        enInput.removeEventListener('blur', handlePhoneticBlur);
-        // Добавляем новый
-        enInput.addEventListener('blur', handlePhoneticBlur);
-      }
-    }
+  if (id === 'addWordModal') populatePlaylistSelect('newWordPlaylist');
+  if (id === 'editWordModal') populatePlaylistSelect('editWordPlaylist');
+  if (id === 'importModal') populatePlaylistSelect('importPlaylist');
   if (id === 'playlistSelectModal') populatePlaylistSelect('playlistSelectList', true);
   if (id === 'settingsModal') {
     document.getElementById('quickShowTranslation').checked = db.settings.showTranslation;
     document.getElementById('quickRandomMode').checked = db.settings.randomMode;
     document.getElementById('quickLoopMode').checked = db.settings.loopMode;
-  }
-    // Подключаем кнопку предпрослушивания голоса
-  if (id === 'settingsModal') {
-    const testBtn = document.getElementById('testVoiceBtn');
-    if (testBtn) {
-      testBtn.onclick = testVoice;
-    }
-  }
-}
-
-
-
-// Обработчик для blur (когда пользователь вышел из поля Английское слово)
-function handlePhoneticBlur(e) {
-  const word = e.target.value.trim();
-  if (word) {
-    fetchPhonetic(word);
   }
 }
 
@@ -1241,187 +1018,39 @@ function renderPlaylistList() {
     return;
   }
 
-  // Кнопка «Готово» в режиме перестановки — исправлено позиционирование
-  if (reorderMode) {
-    const exitBtn = document.createElement('div');
-    exitBtn.className = 'reorder-exit';
-    exitBtn.textContent = '✓ Готово';
-    exitBtn.style.position = 'sticky';
-    exitBtn.style.top = '70px';           // опускаем ниже навбара
-    exitBtn.style.zIndex = '100';
-    exitBtn.style.marginBottom = '12px';
-    exitBtn.style.alignSelf = 'center';
-    exitBtn.onclick = exitReorderMode;
-    container.appendChild(exitBtn);
-  }
-
-  db.playlists.forEach((pl, index) => {
+  db.playlists.forEach(pl => {
     const wordCount = db.words.filter(w => w.playlistId === pl.id).length;
     const row = document.createElement('div');
     row.className = 'playlist-row';
-    row.draggable = reorderMode;
-    row.dataset.index = index;
-
-    // Долгое нажатие (long press)
-    let longPressTimer;
-    row.addEventListener('mousedown', (e) => {
-      if (reorderMode) return;
-      longPressTimer = setTimeout(() => enterReorderMode(), 500);
-    });
-    row.addEventListener('mouseup', () => clearTimeout(longPressTimer));
-    row.addEventListener('mouseleave', () => clearTimeout(longPressTimer));
-    row.addEventListener('touchstart', (e) => {
-      if (reorderMode) return;
-      longPressTimer = setTimeout(() => enterReorderMode(), 500);
-    });
-    row.addEventListener('touchend', () => clearTimeout(longPressTimer));
-    row.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
-
-    // Drag & Drop
-    row.addEventListener('dragstart', (e) => {
-      if (!reorderMode) return;
-      e.dataTransfer.effectAllowed = 'move';
-      row.classList.add('dragging');
-      e.dataTransfer.setData('text/plain', index);
-    });
-    row.addEventListener('dragend', () => row.classList.remove('dragging'));
-
-    row.addEventListener('dragover', (e) => {
-      if (!reorderMode) return;
-      e.preventDefault();
-      const dragging = document.querySelector('.playlist-row.dragging');
-      if (dragging && dragging !== row) {
-        const rect = row.getBoundingClientRect();
-        const offset = e.clientY - rect.top;
-        if (offset < rect.height / 2) {
-          container.insertBefore(dragging, row);
-        } else {
-          container.insertBefore(dragging, row.nextSibling);
-        }
-      }
-    });
-
-    row.addEventListener('drop', (e) => {
-      if (!reorderMode) return;
-      e.preventDefault();
-      const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
-      const toIndex = Array.from(container.children)
-        .filter(el => el.classList.contains('playlist-row'))
-        .indexOf(row);
-      
-      if (fromIndex !== toIndex) {
-        const moved = db.playlists.splice(fromIndex, 1)[0];
-        db.playlists.splice(toIndex, 0, moved);
-        saveAndSync();
-        renderPlaylistList();
-      }
-    });
-
     row.innerHTML = `
-      ${reorderMode ? `<div class="playlist-grip">☰</div>` : ''}
       <div class="playlist-icon">${pl.icon || '📚'}</div>
-      <div style="flex:1" onclick="${reorderMode ? '' : `openPlaylist('${pl.id}')`}">
+      <div style="flex:1" onclick="openPlaylist('${pl.id}')">
         <div class="playlist-name">${esc(pl.name)}</div>
         <div class="playlist-count">${wordCount} слов</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center">
         <button class="action-btn" onclick="event.stopPropagation(); renamePlaylist('${pl.id}')" title="Переименовать">✏️</button>
         <button class="action-btn" onclick="event.stopPropagation(); deletePlaylistById('${pl.id}')" title="Удалить">🗑️</button>
-        ${!reorderMode ? `<button class="playlist-play-btn" onclick="event.stopPropagation(); openPlayerForPlaylist('${pl.id}')" title="Начать тренировку">▶</button>` : ''}
+        <button class="playlist-play-btn" onclick="event.stopPropagation(); openPlayerForPlaylist('${pl.id}')" title="Начать тренировку">▶</button>
       </div>
     `;
     container.appendChild(row);
   });
 }
 
-// Вход в режим перестановки (по долгому нажатию)
-function enterReorderMode() {
-  reorderMode = true;
-  const container = document.getElementById('playlistList');
-  if (container) container.classList.add('reordering');
-  renderPlaylistList();
-  showToast('Режим перестановки включён. Перетаскивай плейлисты');
-}
-
-// Выход из режима
-function exitReorderMode() {
-  reorderMode = false;
-  const container = document.getElementById('playlistList');
-  if (container) container.classList.remove('reordering');
-  renderPlaylistList();
-  showToast('Порядок плейлистов сохранён');
-}
-
-// Предпрослушивание выбранного голоса
-function testVoice() {
-  const voiceSelect = document.getElementById('voiceSelect');
-  if (!voiceSelect) return;
-
-  const testText = "Hello, this is LexFlow. How does this voice sound?";
-
-  // Временно используем выбранный голос
-  const originalVoice = db.settings.selectedVoice;
-  if (voiceSelect.value) {
-    db.settings.selectedVoice = voiceSelect.value;
-  }
-
-  speak(testText).then(() => {
-    // Возвращаем оригинальное значение
-    db.settings.selectedVoice = originalVoice;
-  });
-}
-
-// Автоматическое получение транскрипции по английскому слову
-async function fetchPhonetic(word) {
-  if (!word || word.length < 2) return null;
-  
-  const phoneticInput = document.getElementById('newWordPhonetic');
-  if (!phoneticInput) return null;
-
-  // Показываем индикатор загрузки
-  phoneticInput.style.opacity = '0.6';
-  phoneticInput.value = '🔄 загружаем...';
-
-  try {
-    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.trim())}`);
-    
-    if (!response.ok) throw new Error('Не найдено');
-    
-    const data = await response.json();
-    
-    // Берём первую транскрипцию (обычно самая правильная)
-    let phonetic = null;
-    if (Array.isArray(data) && data.length > 0) {
-      phonetic = data[0].phonetic || 
-                 (data[0].phonetics && data[0].phonetics[0] && data[0].phonetics[0].text);
-    }
-    
-    if (phonetic) {
-      phoneticInput.value = phonetic;
-      showToast('✅ Транскрипция загружена');
-    } else {
-      phoneticInput.value = '';
-      showToast('Транскрипция не найдена');
-    }
-  } catch (e) {
-    phoneticInput.value = '';
-    // Тихо, без ошибки — слово может быть редким
-  } finally {
-    phoneticInput.style.opacity = '1';
-  }
-}
-
 function updatePlaylistSelects() {
+  // Находим выпадающий список в модальном окне
   const select = document.getElementById('newWordPlaylist');
   if (!select) return;
 
-  // Очищаем и добавляем вариант «Все слова»
+  // Очищаем его и добавляем вариант по умолчанию
   select.innerHTML = '<option value="">Все слова</option>';
 
+  // Берем все плейлисты из памяти (db) и добавляем их в список
   db.playlists.forEach(pl => {
     const opt = document.createElement('option');
-    opt.value = pl.id;
-    opt.textContent = (pl.icon || '📚') + ' ' + pl.name;
+    opt.value = pl.id;      // Это скрытый ID для программы
+    opt.textContent = pl.name; // Это название, которое видишь ты
     select.appendChild(opt);
   });
 }
@@ -1497,19 +1126,22 @@ function filterHard() {
 }
 
 function renderWordList() {
+  const searchQuery = document.getElementById('wordSearch').value.toLowerCase().trim();
   const el = document.getElementById('wordList');
   if (!el) return;
   const filterPl = document.getElementById('filterPlaylist') ? document.getElementById('filterPlaylist').value : '';
+// 1. Сначала берем вообще все слова
   let words = db.words;
-  const searchInput = document.getElementById('searchWordInput');
-  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-  if (filterPl) words = words.filter(w => w.playlistId === filterPl);
-  if (showingHardOnly) words = words.filter(w => w.hard);
-  if (query) {
+// 2. Если поле поиска НЕ ПУСТОЕ — фильтруем по поиску (игнорируя плейлист)
+  if (searchQuery !== "") {
     words = words.filter(w => 
-      (w.en && w.en.toLowerCase().includes(query)) || 
-      (w.ru && w.ru.toLowerCase().includes(query))
+      w.en.toLowerCase().includes(searchQuery) || 
+      (w.ru && w.ru.toLowerCase().includes(searchQuery))
     );
+  } else {
+    // 3. Если поиск ПУСТОЙ — работают старые фильтры (плейлист и "сложные")
+    if (filterPl) words = words.filter(w => w.playlistId === filterPl);
+    if (showingHardOnly) words = words.filter(w => w.hard);
   }
 
   // Update filter select
@@ -1547,46 +1179,14 @@ function addWord() {
   const en = document.getElementById('newWordEn').value.trim();
   const ru = document.getElementById('newWordRu').value.trim();
   const phonetic = document.getElementById('newWordPhonetic').value.trim();
-
-  // ─── ИСПРАВЛЕННАЯ ЛОГИКА ПЛЕЙЛИСТА ───
-  let playlistId = '';
-
-  // 1. Проверяем, скрыто ли поле выбора (мы внутри конкретного плейлиста)
-  const modal = document.getElementById('addWordModal');
-  const isInsidePlaylist = modal.classList.contains('add-word-inside-playlist');
-
-  if (isInsidePlaylist) {
-    // Берём ID из текущего фильтра (то, в каком плейлисте мы сейчас находимся)
-    const filterSelect = document.getElementById('filterPlaylist');
-    playlistId = filterSelect ? filterSelect.value : '';
-  } else {
-    // Поле видно — берём выбранное значение из селекта
-    playlistId = document.getElementById('newWordPlaylist').value;
-  }
-
-  if (!en) { 
-    showToast('Введи слово'); 
-    return; 
-  }
-
-  db.words.push({ 
-    id: uid(), 
-    en, 
-    ru, 
-    phonetic, 
-    playlistId, 
-    hard: false, 
-    addedAt: Date.now() 
-  });
-
+  const playlistId = document.getElementById('newWordPlaylist').value;
+  if (!en) { showToast('Введи слово'); return; }
+  db.words.push({ id: uid(), en, ru, phonetic, playlistId, hard: false, addedAt: Date.now() });
   saveAndSync();
   closeModal('addWordModal');
-
-  // Очищаем поля
   document.getElementById('newWordEn').value = '';
   document.getElementById('newWordRu').value = '';
   document.getElementById('newWordPhonetic').value = '';
-
   renderAll();
   showToast('Слово добавлено!');
 }
@@ -1651,79 +1251,20 @@ function saveEditWord() {
 // STATS
 // ═══════════════════════════════════════════════════════
 
-function checkTodayReset() {
-  const today = new Date().toDateString();
-  if (db.stats.todayDate !== today) {
-    db.stats.today = 0;
-    db.stats.todayDate = today;
-    saveLocal(); // Чтобы сброс сохранился в памяти
-  }
-}
-
 function renderStats() {
-  // 1. Считаем сложные слова
   const hardWords = db.words.filter(w => w.hard);
-  
-  // 2. Считаем ВСЕ слова (как и должно быть в поле «Всего слов»)
-  const totalLearned = db.words.length;
-  
-  // 3. Считаем слова, выученные именно СЕГОДНЯ
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayCount = db.words.filter(w => w.learned && w.lastLearnedDate === todayStr).length;
-
-  // 4. Выводим цифры в окошки (теперь они будут обнуляться)
   document.getElementById('statsToday').textContent = db.stats.today;
-  document.getElementById('statsTotal').textContent = totalLearned; // Теперь тут только выученные!
+  document.getElementById('statsTotal').textContent = db.words.length;
   document.getElementById('statsHard').textContent = hardWords.length;
   document.getElementById('statsPlaylists').textContent = db.playlists.length;
   document.getElementById('statsSessions').textContent = db.stats.sessions;
-
-  // 5. Отрисовка списка сложных слов ниже
   const el = document.getElementById('hardWordsList');
-  if (hardWords.length === 0) { 
-    el.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">Нет сложных слов 🎉</div>'; 
-    return; 
-  }
-  
-  el.innerHTML = hardWords.slice(0,20).map(w => `
-    <div class="word-item" style="margin-bottom:6px">
-      <div class="word-item-hard"></div>
-      <div style="flex:1">
-        <div class="word-item-text">${esc(w.en)}</div>
-        <div class="word-item-trans">${esc(w.ru||'')}</div>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="practiceWord('${w.id}')">Учить</button>
-    </div>
-  `).join('');
-}
-
-function resetAllProgress() {
-  if (confirm("Вы уверены? Это обнулит все счётчики и прогресс!")) {
-    db.stats.sessions = 0;
-    db.stats.today = 0;
-    
-    db.words.forEach(w => {
-      w.learned = false;
-      w.hard = false;
-      w.lastLearnedDate = null;
-    });
-
-    saveAndSync(); // Сохраняем пустую базу
-    renderStats(); // СРАЗУ пересчитываем цифры на экране
-    updateStatNumbers();
-    alert("Прогресс сброшен!");
-  }
-}
-
-// Функция галочки (теперь записывает дату для счетчика)
-function toggleWordLearned(id) {
-  const w = db.words.find(w => w.id === id);
-  if (w) {
-    w.learned = !w.learned;
-    w.lastLearnedDate = w.learned ? new Date().toISOString().split('T')[0] : null;
-    saveAndSync();
-    renderAll();
-  }
+  if (hardWords.length === 0) { el.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">Нет сложных слов 🎉</div>'; return; }
+  el.innerHTML = hardWords.slice(0,20).map(w => `<div class="word-item" style="margin-bottom:6px">
+    <div class="word-item-hard"></div>
+    <div style="flex:1"><div class="word-item-text">${esc(w.en)}</div><div class="word-item-trans">${esc(w.ru||'')}</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="practiceWord('${w.id}')">Учить</button>
+  </div>`).join('');
 }
 
 function practiceWord(id) { /* could start mini session */ }
@@ -1746,13 +1287,6 @@ function applySettingsToUI() {
   document.getElementById('showPhonetic').checked = s.showPhonetic;
   document.getElementById('randomMode').checked = s.randomMode;
   document.getElementById('loopMode').checked = s.loopMode;
-    // Обновляем список голосов
-  populateVoiceList();
-    // Подключаем кнопку предпрослушивания голоса (для полной вкладки Настройки)
-  const testBtn = document.getElementById('testVoiceBtn');
-  if (testBtn) {
-    testBtn.onclick = testVoice;
-  }
 }
 
 function updateRangeLabel(inputId, labelId, unit) {
@@ -1781,11 +1315,6 @@ function saveSettings() {
   db.settings.showPhonetic = document.getElementById('showPhonetic').checked;
   db.settings.randomMode = document.getElementById('randomMode').checked;
   db.settings.loopMode = document.getElementById('loopMode').checked;
-    // Сохраняем выбранный голос
-  const voiceSelect = document.getElementById('voiceSelect');
-  if (voiceSelect && voiceSelect.value) {
-    db.settings.selectedVoice = voiceSelect.value;
-  }
   saveAndSync();
 }
 
@@ -1832,28 +1361,21 @@ function selectBestVoice(voices) {
 
 function speak(text) {
   return new Promise(resolve => {
-    window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel(); // Остановка текущей речи
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-      // Выбор голоса — критически важное исправление для сохранения после перезапуска PWA
-    if (db.settings.selectedVoice) {
-      // Ищем голос по имени (самый надёжный способ)
-      const foundVoice = voices.find(v => v.name === db.settings.selectedVoice);
-      if (foundVoice) {
-        utterance.voice = foundVoice;
-        console.log('Используем сохранённый голос:', foundVoice.name);
-      } else {
-        console.log('Сохранённый голос не найден, используем автоматический');
-        utterance.lang = 'en-US';
-      }
-    } 
-    // Автоматический режим
-    else {
+    // ПРОВЕРКА: Выбран ли голос в нашем новом списке?
+    const voiceSelect = document.getElementById('voiceSelect');
+    if (voiceSelect && voices[voiceSelect.value]) {
+      // Если выбран — используем его
+      utterance.voice = voices[voiceSelect.value];
+    } else {
+      // Если нет — используем стандартный английский
       utterance.lang = 'en-US';
     }
     
-    // Скорость речи остаётся как была раньше
+    // Устанавливаем скорость из настроек
     utterance.rate = db.settings.speechRate || 1;
     
     utterance.onend = () => {
@@ -1867,6 +1389,7 @@ function speak(text) {
     };
 
     document.getElementById('wordCard').classList.add('speaking');
+    window.speechSynthesis.resume();
     window.speechSynthesis.speak(utterance);
   });
 }
@@ -1953,48 +1476,7 @@ function startPlayer() {
   }, 500);
 }
 
-function startHardOnly() {
-  keepScreenAlive(); 
-  silentAudio.play().catch(e => console.log("Фоновый звук запущен"));
-
-  // Разблокировка TTS для iOS
-  const unlock = new SpeechSynthesisUtterance('');
-  window.speechSynthesis.speak(unlock);
-
-  let hardWords = db.words.filter(w => w.hard === true);
-
-  if (hardWords.length === 0) {
-    showToast('Нет сложных слов для повторения! 🎉');
-    return;
-  }
-
-  playerQueue = db.settings.randomMode ? shuffle(hardWords) : [...hardWords];
-  playerIndex = 0;
-  playerStopped = false;
-  isPlaying = false;
-  isSlowMode = false;
-  playerLoop = db.settings.loopMode;
-
-  document.getElementById('playerTitle').textContent = '🔴 Сложные слова';
-  document.getElementById('loopBtn').style.opacity = playerLoop ? '1' : '0.4';
-  document.getElementById('modeBadge').textContent = db.settings.randomMode ? '🔀 Random' : '📋 По порядку';
-  
-  db.stats.sessions++;
-  saveLocal();
-  showScreen('playerScreen');
-  displayWord(playerQueue[0]);
-
-  setTimeout(() => {
-    isPlaying = true;
-    updatePlayBtn();
-    playerLoop_fn();
-  }, 500);
-}
-
 function displayWord(word) {
-    checkTodayReset(); // Сбросит в 0, если наступил новый день
-  db.stats.today++;  // Прибавит единицу
-  saveLocal();
   if (!word) return;
   currentWord = word;
 
@@ -2013,12 +1495,6 @@ function displayWord(word) {
 
   // 3. ПЕРЕВОД
   wordTranslation.textContent = word.ru || '';
-  // Плавное появление перевода
-wordTranslation.style.opacity = '0';
-setTimeout(() => {
-  wordTranslation.style.transition = 'opacity 0.4s ease';
-  wordTranslation.style.opacity = '1';
-}, 50);
 
   // 4. СЧЁТЧИК (элемент wordNum)
   if (counter) {
@@ -2166,7 +1642,6 @@ function markHard() {
     saveAndSync();
     document.getElementById('hardBtn').classList.toggle('hard', w.hard);
     showToast(w.hard ? '🔴 Отмечено как сложное' : '✓ Отметка снята');
-    updateStatNumbers();
   }
 }
 
@@ -2193,7 +1668,6 @@ function stopPlayer() {
     wakeLock = null;
   }
   silentAudio.pause();
-  updateStatNumbers();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2209,7 +1683,7 @@ function renderAll() {
 
 function updateStatNumbers() {
   const hardCount = db.words.filter(w => w.hard).length;
-  document.getElementById('statToday').textContent = db.stats.today;   // ← возвращаем как было — правильное число из тренировки
+  document.getElementById('statToday').textContent = db.stats.today;
   document.getElementById('statHard').textContent = hardCount;
   document.getElementById('statTotal').textContent = db.words.length;
 }
@@ -2252,7 +1726,6 @@ async function init() {
   checkTodayReset();
   await loadVoices();
   applySettingsToUI();
-  populateVoiceList();
 
   if (!db.github.token && localStorage.getItem('lexflow_skipSetup') !== '1') {
     document.getElementById('setupScreen').classList.add('active');
@@ -2306,54 +1779,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.getElementById('speechRate').addEventListener('change', saveSettings);
 
-// ─── УЛУЧШЕННАЯ ЛОГИКА ГОЛОСОВ ДЛЯ iOS/Safari ───
-let voices = [];
+// --- НОВАЯ ЛОГИКА ГОЛОСОВ ---
+let voices = []; // Создаем пустой список для голосов
 
 function populateVoiceList() {
+  // Получаем все голоса от системы
   voices = window.speechSynthesis.getVoices();
   const voiceSelect = document.getElementById('voiceSelect');
   if (!voiceSelect) return;
 
-  // Очищаем список
-  voiceSelect.innerHTML = '<option value="">Автоматический (лучший доступный)</option>';
-
-  // Оставляем ТОЛЬКО 4 лучших стабильных голоса для iOS/Safari
-  const preferredVoices = [
-    { name: "Karen", lang: "en-AU" },     // Женский, Австралия (очень хороший)
-    { name: "Samantha", lang: "en-US" },  // Женский US (Kathy часто заменяется на Samantha)
-    { name: "Daniel", lang: "en-GB" },    // Мужской UK
-    { name: "Alex", lang: "en-US" }       // Мужской US
-  ];
-
-  // Добавляем только те голоса, которые действительно есть в системе
-  preferredVoices.forEach(pref => {
-    const found = voices.find(v => 
-      v.name === pref.name && 
-      v.lang.startsWith(pref.lang.substring(0,5)) // en-US, en-GB и т.д.
-    );
-    
-    if (found) {
+  voiceSelect.innerHTML = '';
+  
+  // Берем только английские голоса
+  voices.forEach((voice, i) => {
+    if (voice.lang.includes('en')) {
       const option = document.createElement('option');
-      option.value = found.name;
-      option.textContent = `${found.name} (${found.lang})`;
+      option.textContent = voice.name + ' (' + voice.lang + ')';
+      option.value = i; // Сохраняем порядковый номер голоса
       voiceSelect.appendChild(option);
     }
   });
-
-  // ВОССТАНАВЛИВАЕМ РАНЕЕ ВЫБРАННЫЙ ГОЛОС (самое важное исправление)
-  if (db.settings.selectedVoice) {
-    const voiceExists = voices.some(v => v.name === db.settings.selectedVoice);
-    if (voiceExists) {
-      voiceSelect.value = db.settings.selectedVoice;
-    } else {
-      // Если выбранный голос пропал — сбрасываем на автоматический
-      delete db.settings.selectedVoice;
-      voiceSelect.value = "";
-    }
-  }
 }
 
+// Заставляем список обновляться, когда система подгрузит голоса
+window.speechSynthesis.onvoiceschanged = populateVoiceList;
+// Вызываем один раз при запуске на всякий случай
+populateVoiceList();
 </script>
+<script src="modules/irregular-verbs/irregular-verbs-data.js?v=4"></script>
+<script src="modules/irregular-verbs/irregular-verbs.js?v=4"></script>
 
 <!-- PWA Manifest inline -->
 <script>
@@ -2380,7 +1834,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v27';
+const CACHE = 'lexflow-v8';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
