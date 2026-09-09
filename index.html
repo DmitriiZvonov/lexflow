@@ -11,7 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="modules/irregular-verbs/irregular-verbs.css?v=4">
+<link rel="stylesheet" href="modules/voice/voice-engine.css?v=7">
+<link rel="stylesheet" href="modules/irregular-verbs/irregular-verbs.css?v=7">
 <style>
 :root {
   --bg: #0a0a12;
@@ -119,8 +120,7 @@ textarea.input { resize: vertical; min-height: 120px; }
 .switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
 .switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
 select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-.range-input { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--bg3); outline: none; }
-.range-input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(91,94,244,0.4); }
+.range-input{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:999px;background:linear-gradient(90deg,var(--accent) 0 35%,var(--bg3) 35%);outline:none;border:1px solid var(--border2)} .range-input::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:6px solid var(--accent);box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer}.range-control{display:flex;align-items:center;gap:10px;width:min(310px,48vw)}.range-number{width:68px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:8px;text-align:center;font:600 14px var(--sans)}@media(max-width:600px){.toggle-row.range-row{align-items:flex-start;gap:14px;flex-direction:column}.range-control{width:100%}}
 
 /* ─── HOME SCREEN ─── */
 .hero { text-align: center; padding: 32px 0 24px; }
@@ -346,7 +346,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       <span class="iv-home-icon">🔤</span>
       <span>
         <span class="iv-home-title">Неправильные глаголы</span>
-        <span class="iv-home-sub">Голосовой тренажёр: 1-я, 2-я и 3-я формы</span>
+        <span class="iv-home-sub">Отдельные упражнения для трёх форм</span>
       </span>
       <span class="iv-home-arrow">›</span>
     </button>
@@ -377,75 +377,46 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
   </div>
 </div>
 
-<!-- ═══ IRREGULAR VERBS SCREEN (separate module) ═══ -->
+<!-- ═══ IRREGULAR VERBS MODULE ═══ -->
 <div id="irregularScreen" class="screen">
   <div class="nav">
     <div class="nav-icon" onclick="IrregularTrainer.close()" title="Назад">←</div>
     <div class="nav-title">Неправильные глаголы</div>
-    <div class="nav-icon" onclick="IrregularTrainer.toggleSettings()" title="Настройки тренажёра">⚙️</div>
+    <div id="ivSettingsBtn" class="nav-icon hidden" onclick="IrregularTrainer.toggleSettings()" title="Настройки">⚙️</div>
   </div>
-  <div class="iv-screen-body">
-    <div class="iv-shell">
-      <div class="iv-topline">
-        <span id="ivCount">1 / 1</span>
-        <div class="iv-progress-track"><div id="ivProgressFill" class="iv-progress-fill"></div></div>
+  <div class="iv-screen-body"><div class="iv-shell">
+    <div id="ivModuleMenu" class="iv-module-menu">
+      <div class="iv-module-intro"><h2>Выбери упражнение</h2><p>30 неправильных глаголов · три формы</p></div>
+      <div class="iv-exercise-grid">
+        <button class="iv-exercise-card" onclick="IrregularTrainer.startVoice()"><div class="iv-exercise-icon">🎙️</div><div class="iv-exercise-title">Назови три формы</div><div class="iv-exercise-sub">Видишь перевод на русском и произносишь V1, V2 и V3 в любом порядке.</div></button>
+        <button class="iv-exercise-card" onclick="IrregularTrainer.startQuiz()"><div class="iv-exercise-icon">🎧</div><div class="iv-exercise-title">Услышь и выбери форму</div><div class="iv-exercise-sub">LexFlow произносит одну форму. Определи: Infinitive, Past Simple или Past Participle.</div></button>
       </div>
-
-      <div class="iv-prompt">
-        <div id="ivRussian" class="iv-ru">идти / ехать</div>
-        <div class="iv-hint">Произнеси английские формы. Можно в любом порядке.</div>
-      </div>
-
-      <div class="iv-forms">
-        <div id="ivForm0" class="iv-form-card" onclick="IrregularTrainer.revealForm(0)">
-          <div class="iv-form-label">1-я форма · Infinitive</div>
-          <div class="iv-form-content"><div id="ivWord0" class="iv-form-word">go</div><div id="ivPhonetic0" class="iv-form-phonetic">/ɡəʊ/ · гоу</div></div>
-        </div>
-        <div id="ivForm1" class="iv-form-card" onclick="IrregularTrainer.revealForm(1)">
-          <div class="iv-form-label">2-я форма · Past Simple</div>
-          <div class="iv-form-content"><div id="ivWord1" class="iv-form-word">went</div><div id="ivPhonetic1" class="iv-form-phonetic">/went/ · уэнт</div></div>
-        </div>
-        <div id="ivForm2" class="iv-form-card" onclick="IrregularTrainer.revealForm(2)">
-          <div class="iv-form-label">3-я форма · Past Participle</div>
-          <div class="iv-form-content"><div id="ivWord2" class="iv-form-word">gone</div><div id="ivPhonetic2" class="iv-form-phonetic">/ɡɒn/ · гон</div></div>
-        </div>
-      </div>
-
-      <div class="iv-mic-panel">
-        <button id="ivMicBtn" class="iv-mic-btn" onclick="IrregularTrainer.toggleListening()" aria-label="Микрофон">🎤</button>
-        <div id="ivMicStatus" class="iv-mic-status">Нажми на микрофон и произнеси форму</div>
-        <div id="ivHeard" class="iv-heard"></div>
-        <button id="ivTextModeBtn" class="iv-text-mode-btn" onclick="IrregularTrainer.toggleTextMode()">⌨️ Не могу говорить</button>
-        <div id="ivTextPanel" class="iv-text-panel hidden">
-          <div class="iv-text-row">
-            <input id="ivTextInput" class="iv-text-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Введите английскую форму">
-            <button id="ivCheckBtn" type="button" class="btn btn-primary iv-check-btn">Проверить</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="ivSettings" class="iv-settings hidden">
-        <div class="iv-settings-title">Настройки тренажёра</div>
-        <div class="iv-setting-row">
-          <div><div class="iv-setting-name">Размывать формы</div><div class="iv-setting-sub">Нажатие на карточку временно показывает подсказку</div></div>
-          <label class="switch"><input id="ivBlurToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('blurForms',this.checked)"><span class="slider"></span></label>
-        </div>
-        <div class="iv-setting-row">
-          <div><div class="iv-setting-name">Звук ошибки</div><div class="iv-setting-sub">Короткий сигнал при неверном ответе</div></div>
-          <label class="switch"><input id="ivSoundToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('errorSound',this.checked)"><span class="slider"></span></label>
-        </div>
-        <div class="iv-setting-row">
-          <div><div class="iv-setting-name">Случайный порядок глаголов</div><div class="iv-setting-sub">Перемешивать список при запуске</div></div>
-          <label class="switch"><input id="ivRandomToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('randomOrder',this.checked)"><span class="slider"></span></label>
-        </div>
-      </div>
-
-      <div class="iv-footer">
-        <button id="ivNextBtn" class="btn btn-primary iv-next" onclick="IrregularTrainer.next()" disabled>Далее →</button>
-      </div>
-      <div class="iv-support-note">Голосовое распознавание работает через возможности браузера. Для лучшей совместимости используй Google Chrome и разреши доступ к микрофону.</div>
     </div>
-  </div>
+    <div id="ivTrainerView" class="hidden">
+      <button class="iv-back-menu" onclick="IrregularTrainer.backToMenu()">‹ К упражнениям</button>
+      <div id="ivTrainerTitle" style="text-align:center;font-weight:700;margin:2px 0 12px"></div>
+      <div class="iv-topline"><span id="ivCount">1 / 30</span><div class="iv-progress-track"><div id="ivProgressFill" class="iv-progress-fill"></div></div></div>
+      <div class="iv-prompt"><div id="ivRussian" class="iv-ru">—</div><div class="iv-hint">Три формы английского глагола</div></div>
+      <div class="iv-forms">
+        <div id="ivForm0" class="iv-form-card" onclick="IrregularTrainer.revealForm(0)"><button id="ivSpeak0" class="iv-speaker hidden" onclick="IrregularTrainer.speakForm(0,event)">🔊</button><div class="iv-form-label">1-я форма · Infinitive</div><div class="iv-form-content"><div id="ivWord0" class="iv-form-word"></div><div id="ivPhonetic0" class="iv-form-phonetic"></div></div></div>
+        <div id="ivForm1" class="iv-form-card" onclick="IrregularTrainer.revealForm(1)"><button id="ivSpeak1" class="iv-speaker hidden" onclick="IrregularTrainer.speakForm(1,event)">🔊</button><div class="iv-form-label">2-я форма · Past Simple</div><div class="iv-form-content"><div id="ivWord1" class="iv-form-word"></div><div id="ivPhonetic1" class="iv-form-phonetic"></div></div></div>
+        <div id="ivForm2" class="iv-form-card" onclick="IrregularTrainer.revealForm(2)"><button id="ivSpeak2" class="iv-speaker hidden" onclick="IrregularTrainer.speakForm(2,event)">🔊</button><div class="iv-form-label">3-я форма · Past Participle</div><div class="iv-form-content"><div id="ivWord2" class="iv-form-word"></div><div id="ivPhonetic2" class="iv-form-phonetic"></div></div></div>
+      </div>
+      <div id="ivVoiceControls" class="iv-mic-panel">
+        <button id="ivMicBtn" class="iv-mic-btn" onclick="IrregularTrainer.toggleListening()">🎤</button><div id="ivMicStatus" class="iv-mic-status">Нажми на микрофон и произнеси форму</div><div id="ivHeard" class="iv-heard"></div>
+        <button id="ivTextModeBtn" class="iv-text-mode-btn" onclick="IrregularTrainer.toggleTextMode()">⌨️ Не могу говорить</button>
+        <div id="ivTextPanel" class="iv-text-panel hidden"><div class="iv-text-row"><input id="ivTextInput" class="iv-text-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"><button id="ivCheckBtn" type="button" class="btn btn-primary iv-check-btn">Проверить</button></div></div>
+      </div>
+      <div id="ivQuizStatus" class="iv-quiz-tools hidden"><button id="ivQuizReplay" class="iv-replay" onclick="IrregularTrainer.playQuizPrompt()">🔊</button><div class="iv-quiz-status">Слушай слово и выбери форму</div></div>
+      <div id="ivSettings" class="iv-settings hidden"><div class="iv-settings-title">Настройки тренажёра</div>
+        <div class="iv-setting-row"><div><div class="iv-setting-name">Размывать формы</div></div><label class="switch"><input id="ivBlurToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('blurForms',this.checked)"><span class="slider"></span></label></div>
+        <div class="iv-setting-row"><div><div class="iv-setting-name">Звук ошибки</div></div><label class="switch"><input id="ivSoundToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('errorSound',this.checked)"><span class="slider"></span></label></div>
+        <div class="iv-setting-row"><div><div class="iv-setting-name">Случайный порядок</div></div><label class="switch"><input id="ivRandomToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('randomOrder',this.checked)"><span class="slider"></span></label></div>
+        <div class="iv-setting-row iv-rate-setting"><div><div class="iv-setting-name">Скорость тренажёра на слух</div><div class="iv-setting-sub">От 0.20× до 1.00× · по умолчанию 0.72×</div></div><div class="iv-rate-control"><input id="ivQuizRate" class="iv-rate-range" type="range" min="0.20" max="1.00" step="0.01" value="0.72" oninput="IrregularTrainer.updateQuizRate('range')"><div class="iv-rate-number-wrap"><input id="ivQuizRateNum" class="iv-rate-number" type="number" inputmode="decimal" min="0.20" max="1.00" step="0.01" value="0.72" oninput="IrregularTrainer.updateQuizRate('number')"><span id="ivQuizRateValue" class="iv-rate-value">0.72×</span></div></div></div>
+      </div>
+      <div class="iv-footer"><button id="ivNextBtn" class="btn btn-primary iv-next" onclick="IrregularTrainer.next()" disabled>Далее →</button></div>
+    </div>
+  </div></div>
 </div>
 
 <!-- ═══ WORDS SCREEN ═══ -->
@@ -539,27 +510,25 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
     <div class="settings-section">
       <div class="settings-title">Воспроизведение</div>
       <div class="card">
-        <div class="toggle-row">
+        <div class="toggle-row range-row">
           <div><div class="toggle-label">Пауза перед произношением (сек)</div><div class="toggle-sub" id="pauseBeforeVal">2 сек</div></div>
-          <input type="range" class="range-input" id="pauseBefore" min="0" max="10" value="2" style="width:120px" oninput="updateRangeLabel('pauseBefore','pauseBeforeVal','сек')">
+          <div class="range-control"><input type="range" class="range-input" id="pauseBefore" min="0" max="10" step="1" value="2" oninput="syncRange('pauseBefore','pauseBeforeNum','pauseBeforeVal','сек')"><input id="pauseBeforeNum" class="range-number" type="number" min="0" max="10" step="1" value="2" oninput="syncNumber('pauseBeforeNum','pauseBefore','pauseBeforeVal','сек')"></div>
         </div>
-        <div class="toggle-row">
+        <div class="toggle-row range-row">
           <div><div class="toggle-label">Пауза между словами (сек)</div><div class="toggle-sub" id="pauseAfterVal">4 сек</div></div>
-          <input type="range" class="range-input" id="pauseAfter" min="1" max="15" value="4" style="width:120px" oninput="updateRangeLabel('pauseAfter','pauseAfterVal','сек')">
+          <div class="range-control"><input type="range" class="range-input" id="pauseAfter" min="1" max="15" step="1" value="4" oninput="syncRange('pauseAfter','pauseAfterNum','pauseAfterVal','сек')"><input id="pauseAfterNum" class="range-number" type="number" min="1" max="15" step="1" value="4" oninput="syncNumber('pauseAfterNum','pauseAfter','pauseAfterVal','сек')"></div>
         </div>
-        <div class="toggle-row">
+        <div class="toggle-row range-row">
           <div><div class="toggle-label">Скорость речи</div><div class="toggle-sub" id="speechRateVal">Нормальная (1.0x)</div></div>
-          <input type="range" class="range-input" id="speechRate" min="1" max="15" value="10" style="width:120px" oninput="updateSpeechRate()">
+          <div class="range-control"><input type="range" class="range-input" id="speechRate" min="5" max="15" step="1" value="10" oninput="syncSpeechRate('range')"><input id="speechRateNum" class="range-number" type="number" min="0.5" max="1.5" step="0.1" value="1.0" oninput="syncSpeechRate('number')"></div>
         </div>
         <div class="field">
   <label class="label">Голос озвучки</label>
-  <select class="input" id="voiceSelect" style="width: 100%; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">
-    <option value="">Загрузка голосов...</option>
-  </select>
+  <select class="input voice-preset-select" id="voicePreset" onchange="LexFlowVoice.setPreset(this.value)"><option value="gb-female">🇬🇧 Британский · женский</option><option value="gb-male">🇬🇧 Британский · мужской</option><option value="us-female">🇺🇸 Американский · женский</option><option value="us-male">🇺🇸 Американский · мужской</option></select><div id="voiceResolved" class="voice-resolved"></div>
 </div>
-        <div class="toggle-row">
+        <div class="toggle-row range-row">
           <div><div class="toggle-label">Количество повторов слова</div><div class="toggle-sub" id="repeatCountVal">1 раз</div></div>
-          <input type="range" class="range-input" id="repeatCount" min="1" max="5" value="1" style="width:120px" oninput="updateRangeLabel('repeatCount','repeatCountVal','раз')">
+          <div class="range-control"><input type="range" class="range-input" id="repeatCount" min="1" max="5" step="1" value="1" oninput="syncRange('repeatCount','repeatCountNum','repeatCountVal','раз')"><input id="repeatCountNum" class="range-number" type="number" min="1" max="5" step="1" value="1" oninput="syncNumber('repeatCountNum','repeatCount','repeatCountVal','раз')"></div>
         </div>
       </div>
     </div>
@@ -682,6 +651,9 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
     </div>
   </div>
 </div>
+
+<!-- Edit Playlist Modal -->
+<div class="modal-overlay hidden" id="editPlaylistModal" onclick="closeModalOutside(event,'editPlaylistModal')"><div class="modal"><div class="modal-handle"></div><div class="modal-title">Редактировать плейлист</div><input type="hidden" id="editPlaylistId"><div class="field"><label class="label">Название</label><input class="input" id="editPlaylistName"></div><div class="field"><label class="label">Иконка (эмодзи)</label><input class="input" id="editPlaylistIcon" maxlength="4" placeholder="🎯"></div><div style="display:flex;gap:10px"><button class="btn btn-ghost" style="flex:1" onclick="closeModal('editPlaylistModal')">Отмена</button><button class="btn btn-primary" style="flex:1" onclick="savePlaylistEdit()">Сохранить</button></div></div></div>
 
 <!-- Add Word Modal -->
 <div class="modal-overlay hidden" id="addWordModal" onclick="closeModalOutside(event,'addWordModal')">
@@ -1056,15 +1028,10 @@ function updatePlaylistSelects() {
 }
 
 function renamePlaylist(id) {
-  const pl = db.playlists.find(p => p.id === id);
-  if (!pl) return;
-  const newName = prompt('Введите новое название плейлиста:', pl.name);
-  if (newName && newName.trim() !== '') {
-    pl.name = newName.trim();
-    saveAndSync();
-    renderAll();
-  }
+  const pl=db.playlists.find(p=>p.id===id); if(!pl)return;
+  document.getElementById('editPlaylistId').value=id; document.getElementById('editPlaylistName').value=pl.name||''; document.getElementById('editPlaylistIcon').value=pl.icon||'📚'; showModal('editPlaylistModal');
 }
+function savePlaylistEdit(){const id=document.getElementById('editPlaylistId').value,pl=db.playlists.find(p=>p.id===id);if(!pl)return;const name=document.getElementById('editPlaylistName').value.trim(),icon=document.getElementById('editPlaylistIcon').value.trim();if(!name){showToast('Введи название');return}pl.name=name;pl.icon=icon||'📚';saveAndSync();closeModal('editPlaylistModal');renderAll();showToast('Плейлист обновлён');}
 
 // Функция для удаления (вызывается из карточки плейлиста)
 function deletePlaylistById(id) {
@@ -1276,36 +1243,26 @@ function practiceWord(id) { /* could start mini session */ }
 function applySettingsToUI() {
   const s = db.settings;
   document.getElementById('pauseBefore').value = s.pauseBefore;
-  document.getElementById('pauseBeforeVal').textContent = s.pauseBefore + ' сек';
+  document.getElementById('pauseBeforeVal').textContent = s.pauseBefore + ' сек'; document.getElementById('pauseBeforeNum').value=s.pauseBefore;
   document.getElementById('pauseAfter').value = s.pauseAfter;
-  document.getElementById('pauseAfterVal').textContent = s.pauseAfter + ' сек';
+  document.getElementById('pauseAfterVal').textContent = s.pauseAfter + ' сек'; document.getElementById('pauseAfterNum').value=s.pauseAfter;
   document.getElementById('repeatCount').value = s.repeatCount;
-  document.getElementById('repeatCountVal').textContent = s.repeatCount + ' раз';
-  document.getElementById('speechRate').value = Math.round(s.speechRate * 10);
+  document.getElementById('repeatCountVal').textContent = s.repeatCount + ' раз'; document.getElementById('repeatCountNum').value=s.repeatCount;
+  document.getElementById('speechRate').value = Math.round(s.speechRate * 10); document.getElementById('speechRateNum').value=Number(s.speechRate).toFixed(1);
   updateSpeechRateLabel(s.speechRate);
   document.getElementById('showTranslation').checked = s.showTranslation;
   document.getElementById('showPhonetic').checked = s.showPhonetic;
   document.getElementById('randomMode').checked = s.randomMode;
-  document.getElementById('loopMode').checked = s.loopMode;
+  document.getElementById('loopMode').checked = s.loopMode; ['pauseBefore','pauseAfter','speechRate','repeatCount'].forEach(id=>paintRange(document.getElementById(id))); if(window.LexFlowVoice)LexFlowVoice.syncUI();
 }
 
-function updateRangeLabel(inputId, labelId, unit) {
-  const val = document.getElementById(inputId).value;
-  document.getElementById(labelId).textContent = val + ' ' + unit;
-  saveSettings();
-}
-
-function updateSpeechRate() {
-  const val = document.getElementById('speechRate').value / 10;
-  updateSpeechRateLabel(val);
-  saveSettings();
-}
-
-function updateSpeechRateLabel(val) {
-  let label = val <= 0.7 ? 'Медленная' : val <= 0.9 ? 'Медленнее' : val <= 1.1 ? 'Нормальная' : val <= 1.3 ? 'Быстрее' : 'Быстрая';
-  document.getElementById('speechRateVal').textContent = `${label} (${val.toFixed(1)}x)`;
-}
-
+function paintRange(el){if(!el)return;const min=Number(el.min||0),max=Number(el.max||100),v=Number(el.value),pct=((v-min)/(max-min))*100;el.style.background=`linear-gradient(90deg,var(--accent) 0 ${pct}%,var(--bg3) ${pct}% 100%)`;}
+function syncRange(rangeId,numId,labelId,unit){const r=document.getElementById(rangeId);document.getElementById(numId).value=r.value;document.getElementById(labelId).textContent=r.value+' '+unit;paintRange(r);saveSettings();}
+function syncNumber(numId,rangeId,labelId,unit){const n=document.getElementById(numId),r=document.getElementById(rangeId);let v=Math.max(Number(r.min),Math.min(Number(r.max),Number(n.value)));if(!Number.isFinite(v))return;r.value=v;n.value=v;document.getElementById(labelId).textContent=v+' '+unit;paintRange(r);saveSettings();}
+function syncSpeechRate(source){const r=document.getElementById('speechRate'),n=document.getElementById('speechRateNum');if(source==='number'){let v=Math.max(.5,Math.min(1.5,Number(n.value)));if(!Number.isFinite(v))return;r.value=Math.round(v*10);n.value=v.toFixed(1)}else n.value=(Number(r.value)/10).toFixed(1);updateSpeechRateLabel(Number(r.value)/10);paintRange(r);saveSettings();}
+function updateRangeLabel(inputId,labelId,unit){const el=document.getElementById(inputId);document.getElementById(labelId).textContent=el.value+' '+unit;paintRange(el);saveSettings();}
+function updateSpeechRate(){syncSpeechRate('range')}
+function updateSpeechRateLabel(val){let label=val<=.7?'Медленная':val<=.9?'Медленнее':val<=1.1?'Нормальная':val<=1.3?'Быстрее':'Быстрая';document.getElementById('speechRateVal').textContent=`${label} (${val.toFixed(1)}x)`;}
 function saveSettings() {
   db.settings.pauseBefore = parseInt(document.getElementById('pauseBefore').value);
   db.settings.pauseAfter = parseInt(document.getElementById('pauseAfter').value);
@@ -1359,40 +1316,7 @@ function selectBestVoice(voices) {
   if (!maleVoice && voices.length > 0) maleVoice = voices[0];
 }
 
-function speak(text) {
-  return new Promise(resolve => {
-    window.speechSynthesis.cancel(); // Остановка текущей речи
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // ПРОВЕРКА: Выбран ли голос в нашем новом списке?
-    const voiceSelect = document.getElementById('voiceSelect');
-    if (voiceSelect && voices[voiceSelect.value]) {
-      // Если выбран — используем его
-      utterance.voice = voices[voiceSelect.value];
-    } else {
-      // Если нет — используем стандартный английский
-      utterance.lang = 'en-US';
-    }
-    
-    // Устанавливаем скорость из настроек
-    utterance.rate = db.settings.speechRate || 1;
-    
-    utterance.onend = () => {
-      document.getElementById('wordCard').classList.remove('speaking');
-      resolve();
-    };
-
-    utterance.onerror = () => {
-      document.getElementById('wordCard').classList.remove('speaking');
-      resolve();
-    };
-
-    document.getElementById('wordCard').classList.add('speaking');
-    window.speechSynthesis.resume();
-    window.speechSynthesis.speak(utterance);
-  });
-}
+function speak(text) { const card=document.getElementById('wordCard'); return window.LexFlowVoice ? LexFlowVoice.speak(text,{rate:db.settings.speechRate||1,onstart:()=>card&&card.classList.add('speaking'),onend:()=>card&&card.classList.remove('speaking')}) : Promise.resolve(); }
 
 // ═══════════════════════════════════════════════════════
 // PLAYER ENGINE
@@ -1779,35 +1703,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.getElementById('speechRate').addEventListener('change', saveSettings);
 
-// --- НОВАЯ ЛОГИКА ГОЛОСОВ ---
-let voices = []; // Создаем пустой список для голосов
-
-function populateVoiceList() {
-  // Получаем все голоса от системы
-  voices = window.speechSynthesis.getVoices();
-  const voiceSelect = document.getElementById('voiceSelect');
-  if (!voiceSelect) return;
-
-  voiceSelect.innerHTML = '';
-  
-  // Берем только английские голоса
-  voices.forEach((voice, i) => {
-    if (voice.lang.includes('en')) {
-      const option = document.createElement('option');
-      option.textContent = voice.name + ' (' + voice.lang + ')';
-      option.value = i; // Сохраняем порядковый номер голоса
-      voiceSelect.appendChild(option);
-    }
-  });
-}
-
-// Заставляем список обновляться, когда система подгрузит голоса
-window.speechSynthesis.onvoiceschanged = populateVoiceList;
-// Вызываем один раз при запуске на всякий случай
-populateVoiceList();
+// Голоса обслуживает отдельный модуль modules/voice/voice-engine.js
 </script>
-<script src="modules/irregular-verbs/irregular-verbs-data.js?v=4"></script>
-<script src="modules/irregular-verbs/irregular-verbs.js?v=4"></script>
+<script src="modules/voice/voice-engine.js?v=7"></script>
+<script src="modules/irregular-verbs/irregular-verbs-data.js?v=7"></script>
+<script src="modules/irregular-verbs/irregular-verbs.js?v=7"></script>
 
 <!-- PWA Manifest inline -->
 <script>
@@ -1834,7 +1734,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v8';
+const CACHE = 'lexflow-v9';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
