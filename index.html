@@ -1747,18 +1747,10 @@ async function init() {
       await loadFromGist(); // Ждем, пока загрузятся данные из GitHub
     }
 
-    // 2. И ТОЛЬКО ТЕПЕРЬ запускаем уборщика
-    if (db.words && db.playlists) {
-      const initialCount = db.words.length;
-      db.words = db.words.filter(w => w.playlistId && db.playlists.some(p => p.id === w.playlistId));
-      
-      if (db.words.length < initialCount) {
-        console.log('Уборщик удалил призраков после синхронизации');
-        saveAndSync(); // Сразу отправляем чистую базу обратно в облако
-      }
-    }
+    // Слова после синхронизации не удаляем автоматически.
+    // Даже если у слова временно отсутствует/не найден playlistId, оно должно сохраниться.
 
-    // 3. Рисуем интерфейс
+    // 2. Рисуем интерфейс
     renderAll();
   }
 }
