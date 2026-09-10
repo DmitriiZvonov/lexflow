@@ -325,3 +325,5 @@
   min-height:58px;
 }
 #ivModuleMenu .iv-exercise-grid{margin-top:2px}
+
+.iv-rate-test{margin-top:10px;width:100%;min-height:38px;border:1px solid var(--border);border-radius:10px;background:var(--bg3);color:var(--text);font-size:13px;font-weight:650;cursor:pointer}.iv-rate-test:active{transform:scale(.99)}

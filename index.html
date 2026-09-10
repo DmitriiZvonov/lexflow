@@ -420,7 +420,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
         <div class="iv-setting-row"><div><div class="iv-setting-name">Размывать формы</div></div><label class="switch"><input id="ivBlurToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('blurForms',this.checked)"><span class="slider"></span></label></div>
         <div class="iv-setting-row"><div><div class="iv-setting-name">Звук ошибки</div></div><label class="switch"><input id="ivSoundToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('errorSound',this.checked)"><span class="slider"></span></label></div>
         <div class="iv-setting-row"><div><div class="iv-setting-name">Случайный порядок</div></div><label class="switch"><input id="ivRandomToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('randomOrder',this.checked)"><span class="slider"></span></label></div>
-        <div class="iv-setting-row iv-rate-setting"><div><div class="iv-setting-name">Скорость тренажёра на слух</div><div class="iv-setting-sub">От 0.20× до 1.00× · по умолчанию 0.72×</div></div><div class="iv-rate-control"><input id="ivQuizRate" class="iv-rate-range" type="range" min="0.20" max="1.00" step="0.01" value="0.72" oninput="IrregularTrainer.updateQuizRate('range')"><div class="iv-rate-number-wrap"><input id="ivQuizRateNum" class="iv-rate-number" type="number" inputmode="decimal" min="0.20" max="1.00" step="0.01" value="0.72" oninput="IrregularTrainer.updateQuizRate('number')"><span id="ivQuizRateValue" class="iv-rate-value">0.72×</span></div></div></div>
+        <div class="iv-setting-row iv-rate-setting"><div><div class="iv-setting-name">Скорость тренажёра на слух</div><div class="iv-setting-sub">От 0.10× до 1.00× · по умолчанию 0.72×</div></div><div class="iv-rate-control"><input id="ivQuizRate" class="iv-rate-range" type="range" min="0.10" max="1.00" step="0.01" value="0.72" oninput="IrregularTrainer.updateQuizRate('range')"><div class="iv-rate-number-wrap"><input id="ivQuizRateNum" class="iv-rate-number" type="number" inputmode="decimal" min="0.10" max="1.00" step="0.01" value="0.72" oninput="IrregularTrainer.updateQuizRate('number')"><span id="ivQuizRateValue" class="iv-rate-value">0.72×</span></div></div><button type="button" class="iv-rate-test" onclick="IrregularTrainer.testQuizRate()">🔊 Проверить скорость</button></div>
       </div>
       <div class="iv-footer"><button id="ivNextBtn" class="btn btn-primary iv-next" onclick="IrregularTrainer.next()" disabled>Далее →</button></div>
     </div>
@@ -1102,18 +1102,30 @@ function filterHard() {
 }
 
 function renderWordList() {
-  const searchQuery = document.getElementById('wordSearch').value.toLowerCase().trim();
+  const searchInput = document.getElementById('wordSearch');
+  const searchQuery = String(searchInput ? searchInput.value : '').toLocaleLowerCase().trim();
   const el = document.getElementById('wordList');
   if (!el) return;
   const filterPl = document.getElementById('filterPlaylist') ? document.getElementById('filterPlaylist').value : '';
-// 1. Сначала берем вообще все слова
-  let words = db.words;
-// 2. Если поле поиска НЕ ПУСТОЕ — фильтруем по поиску (игнорируя плейлист)
+  // Берём копию массива, чтобы поиск никогда не менял сам словарь.
+  let words = Array.isArray(db.words) ? [...db.words] : [];
+  // Живой поиск: безопасно работает даже если у старой записи отсутствует en/ru.
+  // Сначала показываем слова, начинающиеся с введённых букв, затем остальные совпадения.
   if (searchQuery !== "") {
-    words = words.filter(w => 
-      w.en.toLowerCase().includes(searchQuery) || 
-      (w.ru && w.ru.toLowerCase().includes(searchQuery))
-    );
+    const normalized = words.map((w, index) => ({
+      w,
+      index,
+      en: String((w && w.en) || '').toLocaleLowerCase().trim(),
+      ru: String((w && w.ru) || '').toLocaleLowerCase().trim()
+    }));
+    words = normalized
+      .filter(x => x.en.includes(searchQuery) || x.ru.includes(searchQuery))
+      .sort((a,b) => {
+        const aStart = a.en.startsWith(searchQuery) || a.ru.startsWith(searchQuery) ? 0 : 1;
+        const bStart = b.en.startsWith(searchQuery) || b.ru.startsWith(searchQuery) ? 0 : 1;
+        return aStart - bStart || a.index - b.index;
+      })
+      .map(x => x.w);
   } else {
     // 3. Если поиск ПУСТОЙ — работают старые фильтры (плейлист и "сложные")
     if (filterPl) words = words.filter(w => w.playlistId === filterPl);
@@ -1806,7 +1818,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v10';
+const CACHE = 'lexflow-v11';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
