@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="modules/voice/voice-engine.css?v=7">
-<link rel="stylesheet" href="modules/irregular-verbs/irregular-verbs.css?v=7">
+<link rel="stylesheet" href="modules/voice/voice-engine.css?v=8">
+<link rel="stylesheet" href="modules/irregular-verbs/irregular-verbs.css?v=9">
 <style>
 :root {
   --bg: #0a0a12;
@@ -119,7 +119,7 @@ textarea.input { resize: vertical; min-height: 120px; }
 .slider::before { content:''; position:absolute; left: 3px; top: 3px; width: 20px; height: 20px; background: var(--text3); border-radius: 50%; transition: .2s; }
 .switch input:checked + .slider { background: var(--accent); border-color: var(--accent); }
 .switch input:checked + .slider::before { transform: translateX(20px); background: #fff; }
-select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a5a80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 12px 8px; padding-right: 36px; }
 .range-input{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:999px;background:linear-gradient(90deg,var(--accent) 0 35%,var(--bg3) 35%);outline:none;border:1px solid var(--border2)} .range-input::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:6px solid var(--accent);box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer}.range-control{display:flex;align-items:center;gap:10px;width:min(310px,48vw)}.range-number{width:68px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:8px;text-align:center;font:600 14px var(--sans)}@media(max-width:600px){.toggle-row.range-row{align-items:flex-start;gap:14px;flex-direction:column}.range-control{width:100%}}
 
 /* ─── HOME SCREEN ─── */
@@ -288,6 +288,16 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 .action-btn:active {
   background: rgba(255, 255, 255, 0.15);
 }
+
+/* PATCH 08 · words redesign */
+.word-list-modern{display:flex;flex-direction:column;gap:8px;padding-bottom:12px}
+.word-item-modern{position:relative;margin:0;min-height:64px;padding:10px 10px 10px 8px;border-radius:14px;background:var(--card);border-color:var(--border);gap:8px;overflow:visible}
+.word-main{flex:1;min-width:0;padding:0 4px}.word-item-modern .word-item-text{font-size:16px;font-weight:650;line-height:1.25}.word-item-modern .word-item-trans{margin-top:4px;line-height:1.35}
+.word-drag-handle,.word-more-btn{border:0;background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.word-drag-handle{width:26px;height:40px;font-size:17px;letter-spacing:-4px;touch-action:none;cursor:grab}.word-drag-handle:active{cursor:grabbing}.word-dragging{opacity:.72;transform:scale(.985);border-color:var(--accent);box-shadow:0 8px 24px rgba(0,0,0,.24);z-index:8}
+.word-more-wrap{position:relative}.word-more-btn{width:36px;height:36px;border-radius:10px;font-size:17px;letter-spacing:1px}.word-more-btn:hover{background:var(--bg3);color:var(--text)}
+.word-menu{position:absolute;right:0;top:40px;z-index:30;min-width:190px;padding:6px;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.35)}.word-menu.hidden{display:none}.word-menu button{width:100%;border:0;background:transparent;color:var(--text);text-align:left;padding:10px 11px;border-radius:8px;font:500 13px var(--sans);cursor:pointer}.word-menu button:hover{background:var(--bg3)}.word-menu button.danger{color:var(--red)}
+
 </style>
 </head>
 <body>
@@ -380,23 +390,21 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 <!-- ═══ IRREGULAR VERBS MODULE ═══ -->
 <div id="irregularScreen" class="screen">
   <div class="nav">
-    <div class="nav-icon" onclick="IrregularTrainer.close()" title="Назад">←</div>
-    <div class="nav-title">Неправильные глаголы</div>
+    <div class="nav-icon iv-nav-back" onclick="IrregularTrainer.navigateBack()" title="Назад">←</div>
+    <div class="nav-title" id="ivNavTitle">Неправильные глаголы</div>
     <div id="ivSettingsBtn" class="nav-icon hidden" onclick="IrregularTrainer.toggleSettings()" title="Настройки">⚙️</div>
   </div>
   <div class="iv-screen-body"><div class="iv-shell">
     <div id="ivModuleMenu" class="iv-module-menu">
-      <div class="iv-module-intro"><h2>Выбери упражнение</h2><p>30 неправильных глаголов · три формы</p></div>
+      
       <div class="iv-exercise-grid">
-        <button class="iv-exercise-card" onclick="IrregularTrainer.startVoice()"><div class="iv-exercise-icon">🎙️</div><div class="iv-exercise-title">Назови три формы</div><div class="iv-exercise-sub">Видишь перевод на русском и произносишь V1, V2 и V3 в любом порядке.</div></button>
-        <button class="iv-exercise-card" onclick="IrregularTrainer.startQuiz()"><div class="iv-exercise-icon">🎧</div><div class="iv-exercise-title">Услышь и выбери форму</div><div class="iv-exercise-sub">LexFlow произносит одну форму. Определи: Infinitive, Past Simple или Past Participle.</div></button>
+        <button class="iv-exercise-card" onclick="IrregularTrainer.startVoice()"><div class="iv-exercise-icon">🎙️</div><div class="iv-exercise-copy"><div class="iv-exercise-title">Назови три формы</div><div class="iv-exercise-sub">Произнеси V1, V2 и V3</div></div><div class="iv-exercise-arrow">›</div></button>
+        <button class="iv-exercise-card" onclick="IrregularTrainer.startQuiz()"><div class="iv-exercise-icon">🎧</div><div class="iv-exercise-copy"><div class="iv-exercise-title">Определи форму</div><div class="iv-exercise-sub">Услышь слово и выбери V1, V2 или V3</div></div><div class="iv-exercise-arrow">›</div></button>
       </div>
     </div>
     <div id="ivTrainerView" class="hidden">
-      <button class="iv-back-menu" onclick="IrregularTrainer.backToMenu()">‹ К упражнениям</button>
-      <div id="ivTrainerTitle" style="text-align:center;font-weight:700;margin:2px 0 12px"></div>
       <div class="iv-topline"><span id="ivCount">1 / 30</span><div class="iv-progress-track"><div id="ivProgressFill" class="iv-progress-fill"></div></div></div>
-      <div class="iv-prompt"><div id="ivRussian" class="iv-ru">—</div><div class="iv-hint">Три формы английского глагола</div></div>
+      <div class="iv-prompt"><div id="ivRussian" class="iv-ru">—</div><div id="ivHint" class="iv-hint">Три формы английского глагола</div></div>
       <div class="iv-forms">
         <div id="ivForm0" class="iv-form-card" onclick="IrregularTrainer.revealForm(0)"><button id="ivSpeak0" class="iv-speaker hidden" onclick="IrregularTrainer.speakForm(0,event)">🔊</button><div class="iv-form-label">1-я форма · Infinitive</div><div class="iv-form-content"><div id="ivWord0" class="iv-form-word"></div><div id="ivPhonetic0" class="iv-form-phonetic"></div></div></div>
         <div id="ivForm1" class="iv-form-card" onclick="IrregularTrainer.revealForm(1)"><button id="ivSpeak1" class="iv-speaker hidden" onclick="IrregularTrainer.speakForm(1,event)">🔊</button><div class="iv-form-label">2-я форма · Past Simple</div><div class="iv-form-content"><div id="ivWord1" class="iv-form-word"></div><div id="ivPhonetic1" class="iv-form-phonetic"></div></div></div>
@@ -407,8 +415,8 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
         <button id="ivTextModeBtn" class="iv-text-mode-btn" onclick="IrregularTrainer.toggleTextMode()">⌨️ Не могу говорить</button>
         <div id="ivTextPanel" class="iv-text-panel hidden"><div class="iv-text-row"><input id="ivTextInput" class="iv-text-input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"><button id="ivCheckBtn" type="button" class="btn btn-primary iv-check-btn">Проверить</button></div></div>
       </div>
-      <div id="ivQuizStatus" class="iv-quiz-tools hidden"><button id="ivQuizReplay" class="iv-replay" onclick="IrregularTrainer.playQuizPrompt()">🔊</button><div class="iv-quiz-status">Слушай слово и выбери форму</div></div>
-      <div id="ivSettings" class="iv-settings hidden"><div class="iv-settings-title">Настройки тренажёра</div>
+      <div id="ivQuizStatus" class="iv-quiz-tools hidden"><button id="ivQuizReplay" class="iv-replay" onclick="IrregularTrainer.playQuizPrompt()"><span class="iv-replay-icon">🔊</span><span>Повторить</span></button><div class="iv-quiz-status" id="ivQuizMessage"></div></div>
+      <div id="ivSettings" class="iv-settings hidden"><div class="iv-settings-head"><button class="iv-settings-back" onclick="IrregularTrainer.toggleSettings(false)">←</button><div class="iv-settings-title">Настройки тренажёра</div></div>
         <div class="iv-setting-row"><div><div class="iv-setting-name">Размывать формы</div></div><label class="switch"><input id="ivBlurToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('blurForms',this.checked)"><span class="slider"></span></label></div>
         <div class="iv-setting-row"><div><div class="iv-setting-name">Звук ошибки</div></div><label class="switch"><input id="ivSoundToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('errorSound',this.checked)"><span class="slider"></span></label></div>
         <div class="iv-setting-row"><div><div class="iv-setting-name">Случайный порядок</div></div><label class="switch"><input id="ivRandomToggle" type="checkbox" onchange="IrregularTrainer.updateSetting('randomOrder',this.checked)"><span class="slider"></span></label></div>
@@ -422,6 +430,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 <!-- ═══ WORDS SCREEN ═══ -->
 <div id="wordsScreen" class="screen">
   <div class="nav">
+    <div class="nav-icon" onclick="switchTab('home')" title="Назад">←</div>
     <div class="nav-title" id="wordsNavTitle">Слова</div>
     <div style="display:flex;gap:8px">
       <div class="nav-icon" onclick="showModal('importModal')">📥</div>
@@ -432,7 +441,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
      <div style="margin-bottom: 15px; position: relative;">
   <input type="text" id="wordSearch" placeholder="Поиск слова или перевода..." 
     style="width: 100%; background: var(--bg3); color: white; border: 1px solid var(--border); padding: 12px 15px; border-radius: 10px; font-size: 14px; outline: none;"
-    oninput="renderWords()">
+    oninput="renderWordList()">
   <span style="position: absolute; right: 15px; top: 12px; opacity: 0.5;">🔍</span>
 </div>
     <div style="margin-bottom:12px; display:flex; gap:8px;">
@@ -441,7 +450,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       </select>
       <button class="btn btn-ghost btn-sm" onclick="filterHard()" id="hardFilterBtn">🔴 Сложные</button>
     </div>
-    <div id="wordList"></div>
+    <div id="wordList" class="word-list-modern"></div>
   </div>
   <div class="tabs">
     <div class="tab" onclick="switchTab('home')">
@@ -465,7 +474,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 
 <!-- ═══ STATS SCREEN ═══ -->
 <div id="statsScreen" class="screen">
-  <div class="nav"><div class="nav-title">Прогресс</div></div>
+  <div class="nav"><div class="nav-icon" onclick="switchTab('home')" title="Назад">←</div><div class="nav-title">Прогресс</div><div style="width:36px"></div></div>
   <div class="body">
     <div class="card" style="text-align:center">
       <div style="font-size:48px;margin-bottom:8px">📊</div>
@@ -505,7 +514,7 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
 
 <!-- ═══ SETTINGS SCREEN ═══ -->
 <div id="settingsScreen" class="screen">
-  <div class="nav"><div class="nav-title">Настройки</div></div>
+  <div class="nav"><div class="nav-icon" onclick="switchTab('home')" title="Назад">←</div><div class="nav-title">Настройки</div><div style="width:36px"></div></div>
   <div class="body">
     <div class="settings-section">
       <div class="settings-title">Воспроизведение</div>
@@ -1127,19 +1136,82 @@ function renderWordList() {
   }
   el.innerHTML = words.map(w => {
     const pl = db.playlists.find(p => p.id === w.playlistId);
-    return `<div class="word-item">
+    return `<div class="word-item word-item-modern" data-word-id="${w.id}">
+      <button class="word-drag-handle" type="button" title="Перетащить" aria-label="Перетащить слово">⋮⋮</button>
       ${w.hard ? '<div class="word-item-hard"></div>' : ''}
-      <div style="flex:1">
+      <div class="word-main">
         <div class="word-item-text">${esc(w.en)}</div>
         <div class="word-item-trans">${esc(w.ru||'')} ${pl?'<span class="pill pill-accent">'+esc(pl.name)+'</span>':''}</div>
       </div>
-      <div class="word-item-btns">
-        <div class="icon-btn" onclick="toggleWordHard('${w.id}')" title="${w.hard?'Убрать отметку':'Отметить сложным'}">${w.hard?'🔴':'⚪'}</div>
-        <div class="icon-btn" onclick="editWord('${w.id}')">✏️</div>
-        <div class="icon-btn red" onclick="deleteWord('${w.id}')">🗑️</div>
+      <div class="word-more-wrap">
+        <button class="word-more-btn" type="button" onclick="toggleWordMenu(event,'${w.id}')" aria-label="Действия">•••</button>
+        <div class="word-menu hidden" id="wordMenu-${w.id}">
+          <button onclick="toggleWordHard('${w.id}');closeWordMenus()">${w.hard?'○ Убрать из сложных':'● Отметить сложным'}</button>
+          <button onclick="editWord('${w.id}');closeWordMenus()">Редактировать</button>
+          <button class="danger" onclick="deleteWord('${w.id}');closeWordMenus()">Удалить</button>
+        </div>
       </div>
     </div>`;
   }).join('');
+  initWordReorder();
+}
+
+function closeWordMenus() {
+  document.querySelectorAll('.word-menu').forEach(m => m.classList.add('hidden'));
+}
+
+function toggleWordMenu(event, id) {
+  event.stopPropagation();
+  const target = document.getElementById('wordMenu-' + id);
+  const wasOpen = target && !target.classList.contains('hidden');
+  closeWordMenus();
+  if (target && !wasOpen) target.classList.remove('hidden');
+}
+
+document.addEventListener('click', closeWordMenus);
+
+function initWordReorder() {
+  const list = document.getElementById('wordList');
+  if (!list || list.dataset.reorderBound === '1') return;
+  list.dataset.reorderBound = '1';
+  let dragging = null, pointerId = null;
+  list.addEventListener('pointerdown', e => {
+    const handle = e.target.closest('.word-drag-handle');
+    if (!handle) return;
+    const item = handle.closest('.word-item-modern');
+    if (!item) return;
+    dragging = item; pointerId = e.pointerId;
+    handle.setPointerCapture && handle.setPointerCapture(pointerId);
+    item.classList.add('word-dragging');
+    e.preventDefault();
+  });
+  list.addEventListener('pointermove', e => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const target = under && under.closest('.word-item-modern');
+    if (!target || target === dragging || target.parentElement !== list) return;
+    const rect = target.getBoundingClientRect();
+    list.insertBefore(dragging, e.clientY < rect.top + rect.height / 2 ? target : target.nextSibling);
+  });
+  const finish = e => {
+    if (!dragging || (e.pointerId != null && e.pointerId !== pointerId)) return;
+    dragging.classList.remove('word-dragging');
+    dragging = null; pointerId = null;
+    saveVisibleWordOrder();
+  };
+  list.addEventListener('pointerup', finish);
+  list.addEventListener('pointercancel', finish);
+}
+
+function saveVisibleWordOrder() {
+  const list = document.getElementById('wordList');
+  if (!list) return;
+  const orderedIds = Array.from(list.querySelectorAll('.word-item-modern')).map(el => el.dataset.wordId);
+  if (orderedIds.length < 2) return;
+  const visible = new Set(orderedIds);
+  let i = 0;
+  db.words = db.words.map(w => visible.has(w.id) ? db.words.find(x => x.id === orderedIds[i++]) : w);
+  saveAndSync();
 }
 
 function addWord() {
@@ -1705,9 +1777,9 @@ document.getElementById('speechRate').addEventListener('change', saveSettings);
 
 // Голоса обслуживает отдельный модуль modules/voice/voice-engine.js
 </script>
-<script src="modules/voice/voice-engine.js?v=7"></script>
-<script src="modules/irregular-verbs/irregular-verbs-data.js?v=7"></script>
-<script src="modules/irregular-verbs/irregular-verbs.js?v=7"></script>
+<script src="modules/voice/voice-engine.js?v=8"></script>
+<script src="modules/irregular-verbs/irregular-verbs-data.js?v=8"></script>
+<script src="modules/irregular-verbs/irregular-verbs.js?v=9"></script>
 
 <!-- PWA Manifest inline -->
 <script>
@@ -1734,7 +1806,7 @@ document.head.appendChild(link);
 <script>
 if ('serviceWorker' in navigator) {
   const swCode = `
-const CACHE = 'lexflow-v9';
+const CACHE = 'lexflow-v10';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
   self.skipWaiting();
