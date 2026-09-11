@@ -1,0 +1,20 @@
+/* LexFlow · Предлоги и частицы — каркас модуля */
+.pp-home-card{width:100%;display:flex;align-items:center;gap:11px;padding:11px 13px;margin:-6px 0 16px;border:1px solid var(--border2);border-radius:14px;background:linear-gradient(145deg,var(--card),rgba(15,20,30,.95));color:var(--text);text-align:left;cursor:pointer;min-height:66px}
+.pp-home-card:active{transform:scale(.99)}
+.pp-home-icon{width:40px;height:40px;border-radius:11px;background:rgba(91,94,244,.13);display:grid;place-items:center;font-size:21px;flex-shrink:0}
+.pp-home-copy{display:flex;flex:1;min-width:0;flex-direction:column;justify-content:center}
+.pp-home-title{font-size:16px;font-weight:600;line-height:1.2}
+.pp-home-sub{font-size:12px;color:var(--text2);line-height:1.3;margin-top:3px}
+.pp-home-arrow{margin-left:auto;color:var(--accent2);font-size:20px}
+.pp-nav-spacer{width:40px;height:40px}
+.pp-screen-body{height:calc(100dvh - 64px);overflow-y:auto;padding:18px}
+.pp-shell{width:min(620px,100%);margin:0 auto}
+.pp-module-head{text-align:center;padding:18px 8px 20px}
+.pp-module-icon{width:58px;height:58px;margin:0 auto 12px;border-radius:18px;background:rgba(91,94,244,.13);display:grid;place-items:center;font-size:30px}
+.pp-module-head h2{font-size:25px;margin:0 0 7px}
+.pp-module-head p{margin:0;color:var(--text2);font-size:13px;line-height:1.45}
+.pp-stage-card{border:1px solid var(--border2);background:linear-gradient(145deg,var(--card),rgba(15,20,30,.95));border-radius:16px;padding:18px}
+.pp-stage-badge{display:inline-flex;padding:5px 9px;border-radius:999px;background:rgba(91,94,244,.13);color:var(--accent2);font-size:11px;font-weight:700;margin-bottom:12px}
+.pp-stage-title{font-size:18px;font-weight:700;margin-bottom:7px}
+.pp-stage-text{font-size:13px;line-height:1.55;color:var(--text2)}
+@media(max-width:640px){.pp-screen-body{padding:12px}.pp-module-head{padding:10px 6px 16px}.pp-module-head h2{font-size:22px}.pp-stage-card{padding:16px}}

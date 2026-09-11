@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="modules/voice/voice-engine.css?v=8">
 <link rel="stylesheet" href="modules/irregular-verbs/irregular-verbs.css?v=9">
+<link rel="stylesheet" href="modules/prepositions/prepositions.css?v=1">
 <style>
 :root {
   --bg: #0a0a12;
@@ -360,6 +361,14 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
       </span>
       <span class="iv-home-arrow">›</span>
     </button>
+    <button class="pp-home-card" onclick="PrepositionsTrainer.open()">
+      <span class="pp-home-icon">🧩</span>
+      <span class="pp-home-copy">
+        <span class="pp-home-title">Предлоги и частицы</span>
+        <span class="pp-home-sub">Пойми логику и научись выбирать правильно</span>
+      </span>
+      <span class="pp-home-arrow">›</span>
+    </button>
     <div class="section-header">
       <div class="section-title">Плейлисты</div>
       <button class="btn btn-ghost btn-sm" onclick="showModal('newPlaylistModal')">+ Создать</button>
@@ -383,6 +392,29 @@ select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csv
     <div class="tab" onclick="switchTab('settings')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Настройки
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PREPOSITIONS & PARTICLES MODULE ═══ -->
+<div id="prepositionsScreen" class="screen">
+  <div class="nav">
+    <div class="nav-icon" onclick="PrepositionsTrainer.navigateBack()" title="Назад">←</div>
+    <div class="nav-title">Предлоги и частицы</div>
+    <div class="pp-nav-spacer" aria-hidden="true"></div>
+  </div>
+  <div class="pp-screen-body">
+    <div class="pp-shell">
+      <div class="pp-module-head">
+        <div class="pp-module-icon">🧩</div>
+        <h2>Предлоги и частицы</h2>
+        <p>Пойми логику и научись выбирать правильно</p>
+      </div>
+      <div class="pp-stage-card">
+        <div class="pp-stage-badge">Новый модуль</div>
+        <div class="pp-stage-title">Основа готова</div>
+        <div class="pp-stage-text">Здесь появятся понятные правила, лайфхаки и четыре отдельных тренажёра. Добавим их поэтапно, не затрагивая твою базу слов.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1785,6 +1817,7 @@ document.getElementById('speechRate').addEventListener('change', saveSettings);
 <script src="modules/voice/voice-engine.js?v=8"></script>
 <script src="modules/irregular-verbs/irregular-verbs-data.js?v=8"></script>
 <script src="modules/irregular-verbs/irregular-verbs.js?v=9"></script>
+<script src="modules/prepositions/prepositions.js?v=1"></script>
 
 <!-- PWA Manifest inline -->
 <script>
